@@ -10,6 +10,12 @@ cmake . && make
 
 ## Run
 
-```
+```bash
 ./sproinGL
+```
+
+## Cleanup
+
+```bash
+git clean -fXd
 ```
