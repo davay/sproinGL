@@ -1,0 +1,1 @@
+/usr/bin/c++    -rdynamic CMakeFiles/sproinGL.dir/main.cpp.o  -o sproinGL  /usr/lib/libGL.so /usr/lib/libglfw.so.3.3 external/libGLAD.a -ldl 

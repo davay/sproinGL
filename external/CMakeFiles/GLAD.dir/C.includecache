@@ -1,0 +1,36 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/davay/Documents/USA/SU/CPSC4910_Graphics/sproinGL/temp/external/src/glad.c
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+../include/glad/glad.h
+-
+windows.h
+-
+winapifamily.h
+-
+dlfcn.h
+-
+
+external/include/KHR/khrplatform.h
+stdint.h
+-
+inttypes.h
+-
+stdint.h
+-
+
+external/include/glad/glad.h
+KHR/khrplatform.h
+-
+
