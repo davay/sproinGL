@@ -6,5 +6,5 @@ C_FLAGS =
 
 C_DEFINES = 
 
-C_INCLUDES = -I/home/davay/Documents/USA/SU/CPSC4910_Graphics/sproinGL/temp/external/include 
+C_INCLUDES = -I/home/davay/Documents/USA/SU/CPSC4910_Graphics/sproinGL/external/include 
 
