@@ -17,5 +17,5 @@ cmake . && make
 ## Cleanup
 
 ```bash
-git clean -fXd
+git clean -fdX
 ```

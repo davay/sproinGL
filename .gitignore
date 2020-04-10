@@ -1,4 +1,5 @@
 Makefile
+sproinGL
 CMakeCache.txt
 *.cmake
 CMakeFiles/
