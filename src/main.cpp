@@ -92,7 +92,6 @@ int main() {                                                // application entry
     glfwMakeContextCurrent(w);
     gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);    // set OpenGL extensions
     // following line will not compile unless glad.h >= OpenGLv4.3
-    glDebugMessageCallback(GlslError, NULL);
     // REQUIREMENT 2) build shader program
     if (!(program = LinkProgramViaCode(&vertexShader, &pixelShader)))
         return AppError("can't link shader program");

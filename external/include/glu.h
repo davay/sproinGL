@@ -35,7 +35,12 @@
 #endif
 
 #include <stddef.h> /* for wchar_t */
-#include <OpenGL/gl.h>
+
+#if __APPLE__
+	#include <OpenGL/gl.h>
+#elif __linux__ || __unix__
+	#include <GL/gl.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
