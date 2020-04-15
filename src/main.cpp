@@ -1,139 +1,109 @@
- 
-#include <glad/glad.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-#include "linmath.h"
- 
-#include <stdlib.h>
-#include <stdio.h>
- 
-static const struct
-{
-    float x, y;
-    float r, g, b;
-} vertices[3] =
-{
-    { -0.6f, -0.4f, 1.f, 0.f, 0.f },
-    {  0.6f, -0.4f, 0.f, 1.f, 0.f },
-    {   0.f,  0.6f, 0.f, 0.f, 1.f }
-};
- 
-static const char* vertex_shader_text =
-"#version 110\n"
-"uniform mat4 MVP;\n"
-"attribute vec3 vCol;\n"
-"attribute vec2 vPos;\n"
-"varying vec3 color;\n"
-"void main()\n"
-"{\n"
-"    gl_Position = MVP * vec4(vPos, 0.0, 1.0);\n"
-"    color = vCol;\n"
-"}\n";
- 
-static const char* fragment_shader_text =
-"#version 110\n"
-"varying vec3 color;\n"
-"void main()\n"
-"{\n"
-"    gl_FragColor = vec4(color, 1.0);\n"
-"}\n";
- 
-static void error_callback(int error, const char* description)
-{
-    fprintf(stderr, "Error: %s\n", description);
+// 2-Example-ClearScreen-v2.cpp - use OpenGL shader architecture
+
+#include <glad.h>                           // GL header file
+#include <GLFW/glfw3.h>                          // GL toolkit
+#include <stdio.h>                          // printf, etc.
+#include "GLXtras.h"                        // convenience routines
+
+GLuint vBuffer = 0;                         // GPU buf ID, valid > 0
+GLuint program = 0;                         // shader ID, valid if > 0
+
+// vertex shader: operations before the rasterizer
+const char *vertexShader = R"(
+    #version 130
+    in vec2 point;                          // 2D point from GPU memory
+    void main() {
+        // REQUIREMENT 1A) transform vertex:
+        gl_Position = vec4(point, 0, 1);    // 'built-in' variable
+    }
+)";
+// pixel shader: operations after the rasterizer
+const char *pixelShader = R"(
+	#ifdef GL_ES
+precision mediump float;
+#endif
+
+#define PI 3.14159265359
+
+uniform vec2 u_resolution;
+
+void main() {
+    vec2 gridSize = vec2(8.0, 8.0);
+    vec2 normalCoord = gl_FragCoord.xy / u_resolution;
+    vec2 value = sign(sin(normalCoord * PI * gridSize));
+    vec3 rgb = vec3(value.x * value.y);
+    gl_FragColor = vec4(rgb, 1.0);
 }
- 
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+)";
+
+void InitVertexBuffer() {
+    // REQUIREMENT 3A) create GPU buffer, copy 4 vertices
+    float pts[][2] = {{-1,-1},{-1,1},{1,1},{1,-1}}; // 'object'
+    glGenBuffers(1, &vBuffer);                      // ID for GPU buffer
+    glBindBuffer(GL_ARRAY_BUFFER, vBuffer);         // make it active
+    glBufferData(GL_ARRAY_BUFFER, sizeof(pts), pts, GL_STATIC_DRAW);
+}
+
+void Display() {
+    glUseProgram(program);                          // ensure correct program
+    glBindBuffer(GL_ARRAY_BUFFER, vBuffer);         // activate vertex buffer
+    // REQUIREMENT 3B) set vertex feeder
+    GLint id = glGetAttribLocation(program, "point");
+    glEnableVertexAttribArray(id);
+    glVertexAttribPointer(id, 2, GL_FLOAT, GL_FALSE, 0, (void *) 0);
+//  in subsequent code we will replace the above three lines with
+//  VertexAttribPointer(program, "point", 2, 0, (void *) 0);
+    glDrawArrays(GL_QUADS, 0, 4);                   // display entire window
+    glFlush();                                      // flush GL ops
+}
+
+void Keyboard(GLFWwindow *window, int key, int scancode, int action, int mods) {
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)     // test for program exit
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
- 
-int main(void)
-{
-    GLFWwindow* window;
-    GLuint vertex_buffer, vertex_shader, fragment_shader, program;
-    GLint mvp_location, vpos_location, vcol_location;
- 
-    glfwSetErrorCallback(error_callback);
- 
+
+void GlfwError(int id, const char *reason) {
+    printf("GFLW error %i: %s\n", id, reason);
+    getchar();
+}
+
+void APIENTRY GlslError(GLenum source, GLenum type, GLuint id, GLenum severity,
+                        GLsizei len, const GLchar *msg, const void *data) {
+    printf("GLSL Error: %s\n", msg);
+    getchar();
+}
+
+int AppError(const char *msg) {
+    glfwTerminate();
+    printf("Error: %s\n", msg);
+    getchar();
+    return 1;
+}
+
+int main() {                                                // application entry
+    glfwSetErrorCallback(GlfwError);                        // init GL toolkit
     if (!glfwInit())
-        exit(EXIT_FAILURE);
- 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
- 
-    window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
-    if (!window)
-    {
-        glfwTerminate();
-        exit(EXIT_FAILURE);
-    }
- 
-    glfwSetKeyCallback(window, key_callback);
- 
-    glfwMakeContextCurrent(window);
-// gladLoadGL(glfwGetProcAddress);
-    gladLoadGL();
-    glfwSwapInterval(1);
- 
-    // NOTE: OpenGL error checks have been omitted for brevity
- 
-    glGenBuffers(1, &vertex_buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
- 
-    vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
-    glCompileShader(vertex_shader);
- 
-    fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);
-    glCompileShader(fragment_shader);
- 
-    program = glCreateProgram();
-    glAttachShader(program, vertex_shader);
-    glAttachShader(program, fragment_shader);
-    glLinkProgram(program);
- 
-    mvp_location = glGetUniformLocation(program, "MVP");
-    vpos_location = glGetAttribLocation(program, "vPos");
-    vcol_location = glGetAttribLocation(program, "vCol");
- 
-    glEnableVertexAttribArray(vpos_location);
-    glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE,
-                          sizeof(vertices[0]), (void*) 0);
-    glEnableVertexAttribArray(vcol_location);
-    glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
-                          sizeof(vertices[0]), (void*) (sizeof(float) * 2));
- 
-    while (!glfwWindowShouldClose(window))
-    {
-        float ratio;
-        int width, height;
-        mat4x4 m, p, mvp;
- 
-        glfwGetFramebufferSize(window, &width, &height);
-        ratio = width / (float) height;
- 
-        glViewport(0, 0, width, height);
-        glClear(GL_COLOR_BUFFER_BIT);
- 
-        mat4x4_identity(m);
-        mat4x4_rotate_Z(m, m, (float) glfwGetTime());
-        mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-        mat4x4_mul(mvp, p, m);
- 
-        glUseProgram(program);
-        glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
- 
-        glfwSwapBuffers(window);
+        return 1;
+    // create named window of given size
+    GLFWwindow *w = glfwCreateWindow(300, 300, "Clear to Red", NULL, NULL);
+    if (!w)
+        return AppError("can't open window");
+    glfwMakeContextCurrent(w);
+    gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);    // set OpenGL extensions
+    // following line will not compile unless glad.h >= OpenGLv4.3
+    glDebugMessageCallback(GlslError, NULL);
+    // REQUIREMENT 2) build shader program
+    if (!(program = LinkProgramViaCode(&vertexShader, &pixelShader)))
+        return AppError("can't link shader program");
+    InitVertexBuffer();                                     // set GPU vertex memory
+    glfwSetKeyCallback(w, Keyboard);
+    while (!glfwWindowShouldClose(w)) {                     // event loop
+        Display();
+        if (PrintGLErrors())                                // test for runtime GL error
+            getchar();                                      // if so, pause
+        glfwSwapBuffers(w);                                 // double-buffer is default
         glfwPollEvents();
     }
- 
-    glfwDestroyWindow(window);
- 
+    glfwDestroyWindow(w);
     glfwTerminate();
-    exit(EXIT_SUCCESS);
 }
