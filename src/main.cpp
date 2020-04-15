@@ -10,30 +10,31 @@ GLuint program = 0;                         // shader ID, valid if > 0
 
 // vertex shader: operations before the rasterizer
 const char *vertexShader = R"(
-    #version 130
-    in vec2 point;                          // 2D point from GPU memory
-    void main() {
-        // REQUIREMENT 1A) transform vertex:
-        gl_Position = vec4(point, 0, 1);    // 'built-in' variable
-    }
+  #version 130
+  in vec2 point;
+
+  void main() {
+      gl_Position = vec4(point, 0, 1);
+  }
 )";
+
 // pixel shader: operations after the rasterizer
 const char *pixelShader = R"(
 	#ifdef GL_ES
-precision mediump float;
-#endif
+  precision mediump float;
+  #endif
 
-#define PI 3.14159265359
+  #define PI 3.14159265359
 
-uniform vec2 u_resolution;
+  uniform vec2 u_resolution;
 
-void main() {
-    vec2 gridSize = vec2(8.0, 8.0);
-    vec2 normalCoord = gl_FragCoord.xy / u_resolution;
-    vec2 value = sign(sin(normalCoord * PI * gridSize));
-    vec3 rgb = vec3(value.x * value.y);
-    gl_FragColor = vec4(rgb, 1.0);
-}
+  void main() {
+      vec2 gridSize = vec2(8.0, 8.0);
+      vec2 normalCoord = gl_FragCoord.xy / u_resolution;
+      vec2 value = sign(sin(normalCoord * PI * gridSize));
+      vec3 rgb = vec3(value.x * value.y);
+      gl_FragColor = vec4(rgb, 1.0);
+  }
 )";
 
 void InitVertexBuffer() {
