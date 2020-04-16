@@ -26,7 +26,7 @@ const char *fragmentShaderSource = R"(
   out vec4 fragColor;
   void main() {
       vec2 gridSize = vec2(8.0, 8.0);
-      vec2 normalCoord = gl_FragCoord.xy / 600.0;
+      vec2 normalCoord = gl_FragCoord.xy / 300.0;
       vec2 value = sign(sin(normalCoord * PI * gridSize));
       vec3 rgb = vec3(value.x * value.y);
       fragColor = vec4(rgb, 1.0);
