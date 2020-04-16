@@ -81,11 +81,17 @@ int main() {                                                // application entry
 
     glfwSetKeyCallback(window, Keyboard);
 
-    float vertices[] = {
-        -1.0f, -1.0f, 0.0f,
-        -1.0f, 1.0f, 0.0f,
-         1.0f,  1.0f, 0.0f
+    GLfloat vertices[] = {
+        -1, -1, 0,
+        -1, 1, 0,
+         1,  1, 0,
+	 1, -1, 0
     };
+
+
+    GLubyte indices[] = {0,1,2, // first triangle (bottom left - top left - top right)
+                     0,2,3}; // second triangle (bottom left - top right - bottom right)
+
 
     GLuint vbo;
     glGenBuffers(1, &vbo);
@@ -103,7 +109,7 @@ int main() {                                                // application entry
         glUseProgram(shaderProgram);
 
         glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
