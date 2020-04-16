@@ -19,13 +19,17 @@ const char *vertexShaderSource = R"(
 // pixel shader: operations after the rasterizer
 const char *fragmentShaderSource = R"(
   #version 330 core
+  #define PI 3.14159265359
+
+  uniform vec2 u_resolution;
 
   out vec4 fragColor;
-  void main()
-  {
-    vec2 value = sign(sin((gl_PointCoord.xy) * 12.5));
-    vec3 rgb = vec3(value.x * value.y);
-    fragColor = vec4(rgb, 1.0);
+  void main() {
+      vec2 gridSize = vec2(8.0, 8.0);
+      vec2 normalCoord = gl_FragCoord.xy / 600.0;
+      vec2 value = sign(sin(normalCoord * PI * gridSize));
+      vec3 rgb = vec3(value.x * value.y);
+      fragColor = vec4(rgb, 1.0);
   }
 )";
 
