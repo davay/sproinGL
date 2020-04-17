@@ -78,17 +78,14 @@ int main() {                                                // application entry
 
     glfwSetKeyCallback(window, Keyboard);
 
-    float vertices[] = {
-        -1.0f, -1.0f, 0.0f,
-        -1.0f, 1.0f, 0.0f,
-         1.0f,  1.0f, 0.0f,
-	 1.0f, -1.0f, 0.0f
+    GLfloat vertices[] = {
+        -1, -1, 0,
+        -1, 1, 0,
+         1,  1, 0,
+	 1, -1, 0
     };
 
-
-    GLubyte indices[] = {0,1,2, // first triangle (bottom left - top left - top right)
-                     0,2,3}; // second triangle (bottom left - top right - bottom right)
-
+    GLubyte indices[] = {0,1,2,0,2,3}; // second triangle (bottom left - top right - bottom right)
 
     GLuint vbo;
     glGenBuffers(1, &vbo);
