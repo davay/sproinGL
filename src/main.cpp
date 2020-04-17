@@ -72,9 +72,6 @@ int main() {                                                // application entry
     glfwMakeContextCurrent(window);
     gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);    // set OpenGL extensions
 
-    // following line will not compile unless glad.h >= OpenGLv4.3
-    // glDebugMessageCallback(GlslError, NULL); // So we just don't use it
-    // REQUIREMENT 2) build shader program
     GLuint shaderProgram;
     if (!(shaderProgram = LinkProgramViaCode(&vertexShaderSource, &fragmentShaderSource)))
         return AppError("can't link shader program");
@@ -97,19 +94,18 @@ int main() {                                                // application entry
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(vbo);
+    
     GLuint vao;
     glGenVertexArrays(1, &vao);
     glEnableVertexAttribArray(vao);
     glBindVertexArray(vao);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glBindVertexArray(0);
 
     while (!glfwWindowShouldClose(window)) {
         glUseProgram(shaderProgram);
 
-        glBindVertexArray(vao);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices);
 
         glfwSwapBuffers(window);
