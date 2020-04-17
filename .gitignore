@@ -4,3 +4,4 @@ sproinGL
 CMakeCache.txt
 *.cmake
 CMakeFiles/
+.DS_Store
