@@ -27,10 +27,10 @@ const unsigned int SCR_HEIGHT = 300;
 const char *vertexShaderSource = R"(
   #version 330 core
 
-  layout (location = 0) in vec3 aPos;
+  layout (location = 0) in vec3 pos;
 
   void main() {
-    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+    gl_Position = vec4(pos, 1.0);
   }
 )";
 
@@ -60,6 +60,7 @@ int main()
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
+    glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GL_FALSE);
 #endif
 
     // glfw window creation
