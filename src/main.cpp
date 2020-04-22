@@ -3,6 +3,9 @@
 
 #include <iostream>
 
+unsigned int SCR_WIDTH = 300;
+unsigned int SCR_HEIGHT = 300;
+
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow *window)
@@ -18,35 +21,35 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
+    SCR_WIDTH = width;
+    SCR_HEIGHT = height;
 }
 
 // settings
-const unsigned int SCR_WIDTH = 300;
-const unsigned int SCR_HEIGHT = 300;
 
 const char *vertexShaderSource = R"(
-  #version 330 core
+    #version 330 core
 
-  layout (location = 0) in vec3 pos;
+    layout (location = 0) in vec3 pos;
 
-  void main() {
-    gl_Position = vec4(pos, 1.0);
-  }
+    void main() {
+        gl_Position = vec4(pos, 1.0);
+    }
 )";
 
 const char *fragmentShaderSource = R"(
-  #version 330 core
-  #define PI 3.14159265359
+    #version 330 core
+    #define PI 3.14159265359
+    uniform vec2 u_resolution;
+    out vec4 FragColor;
 
-  out vec4 FragColor;
-
-  void main() {
-    vec2 gridSize = vec2(8.0, 8.0);
-    vec2 normalCoord = gl_FragCoord.xy / 300.0;
-    vec2 value = sign(sin(normalCoord * PI * gridSize));
-    vec3 rgb = vec3(value.x * value.y);
-    FragColor = vec4(rgb, 1.0f);
-  }
+    void main() {
+      vec2 gridSize = vec2(8.0, 8.0);
+      vec2 normalCoord = gl_FragCoord.xy / u_resolution.x;
+      vec2 value = sign(sin(normalCoord * PI * gridSize));
+      vec3 rgb = vec3(value.x * value.y);
+      FragColor = vec4(rgb, 1.0f);
+    }
 )";
 
 int main()
@@ -165,6 +168,8 @@ int main()
     // uncomment this call to draw in wireframe polygons.
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+    int resolutionLocation = glGetUniformLocation(shaderProgram, "u_resolution");
+
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -180,6 +185,7 @@ int main()
 
         // draw our first triangle
         glUseProgram(shaderProgram);
+        glUniform2f(resolutionLocation, SCR_WIDTH, SCR_HEIGHT);
         glBindVertexArray(vao); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         //glDrawArrays(GL_TRIANGLES, 0, 6);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
