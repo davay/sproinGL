@@ -30,25 +30,32 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 const char *vertexShaderSource = R"(
     #version 330 core
 
-    layout (location = 0) in vec3 pos;
+    layout (location = 0) in vec3 vPos;
+    layout (location = 1) in vec3 vCol;
+
+    out vec3 ourColor;
 
     void main() {
-        gl_Position = vec4(pos, 1.0);
+        gl_Position = vec4(vPos, 1.0);
+        ourColor = vCol;
     }
 )";
 
 const char *fragmentShaderSource = R"(
     #version 330 core
     #define PI 3.14159265359
+
     uniform vec2 u_resolution;
+
+    in vec3 ourColor;
     out vec4 FragColor;
 
     void main() {
       vec2 gridSize = vec2(8.0, 8.0);
       vec2 normalCoord = gl_FragCoord.xy / u_resolution.x;
       vec2 value = sign(sin(normalCoord * PI * gridSize));
-      vec3 rgb = vec3(value.x * value.y);
-      FragColor = vec4(rgb, 1.0f);
+      vec3 intensity = vec3(value.x * value.y);
+      FragColor = vec4(ourColor * intensity, 1.0f);
     }
 )";
 
@@ -130,15 +137,18 @@ int main()
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float vertices[] = {
-         1.0f,  1.0f, 0.0f,  // top right
-         1.0f, -1.0f, 0.0f,  // bottom right
-        -1.0f, -1.0f, 0.0f,  // bottom left
-        -1.0f,  1.0f, 0.0f   // top left
+        // Position          // Color
+         1.0f,  1.0f, 0.0f,  1.0f, 0.0f, 0.0f, // top right
+         1.0f, -1.0f, 0.0f,  0.0f, 1.0f, 0.0f, // bottom right
+        -1.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f, // bottom left
+        -1.0f,  1.0f, 0.0f,  0.0f, 0.0f, 1.0f  // top left
     };
+
     unsigned int indices[] = {  // note that we start from 0!
         0, 1, 3,  // first Triangle
         1, 2, 3   // second Triangle
     };
+
     unsigned int vbo, vao, ebo;
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
@@ -152,8 +162,13 @@ int main()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
+    // Color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
     glBindBuffer(GL_ARRAY_BUFFER, 0);
