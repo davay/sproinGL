@@ -1,10 +1,11 @@
 #include <glad.h>
 #include <GLFW/glfw3.h>
-
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 
-unsigned int SCR_WIDTH = 300;
-unsigned int SCR_HEIGHT = 300;
+unsigned int SCR_WIDTH = 640;
+unsigned int SCR_HEIGHT = 400;
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
@@ -33,10 +34,15 @@ const char *vertexShaderSource = R"(
     layout (location = 0) in vec3 vPos;
     layout (location = 1) in vec3 vCol;
 
+    uniform mat4 model;
+    uniform mat4 view;
+    uniform mat4 projection;
+
     out vec3 ourColor;
 
     void main() {
-        gl_Position = vec4(vPos, 1.0);
+        //gl_Position = vec4(vPos, 1.0);
+        gl_Position = projection * view * model * vec4(vPos, 1.0);
         ourColor = vCol;
     }
 )";
@@ -183,7 +189,21 @@ int main()
     // uncomment this call to draw in wireframe polygons.
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+    // Define vertex transformations
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+    glm::mat4 view = glm::mat4(1.0f);
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+
+    glm::mat4 projection;
+    projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
+
+    // Get shader uniform locations
     int resolutionLocation = glGetUniformLocation(shaderProgram, "u_resolution");
+    int modelLoc = glGetUniformLocation(shaderProgram, "model");
+    int viewLoc = glGetUniformLocation(shaderProgram, "view");
+    int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
 
     // render loop
     // -----------
@@ -200,7 +220,13 @@ int main()
 
         // draw our first triangle
         glUseProgram(shaderProgram);
+
+        // Set shader uniforms
         glUniform2f(resolutionLocation, SCR_WIDTH, SCR_HEIGHT);
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
         glBindVertexArray(vao); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         //glDrawArrays(GL_TRIANGLES, 0, 6);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
