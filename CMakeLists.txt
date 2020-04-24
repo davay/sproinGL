@@ -1,5 +1,5 @@
-cmake_minimum_required (VERSION 2.8.11)
-project(sproinGL)
+cmake_minimum_required (VERSION 3.0)
+project(sproinGL VERSION 0.01)
 find_package(glfw3 3.3 REQUIRED)
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
