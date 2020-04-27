@@ -3,60 +3,17 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include "camera.h"
 
 unsigned int SCR_WIDTH = 640;
 unsigned int SCR_HEIGHT = 400;
 
 float lastX = 320, lastY = 200;
-
-glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f,  3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f,  0.0f);
-
 float yaw = 270.0f;
 float pitch = 0.0f;
+bool firstMouse = true;
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-void processInput(GLFWwindow *window)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
-    const float cameraSpeed = 0.05f; // adjust accordingly
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-}
-
-void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-  float xoffset = xpos - lastX;
-  float yoffset = lastY - ypos; // reversed since y-coordinates range from bottom to top
-  lastX = xpos;
-  lastY = ypos;
-
-  const float sensitivity = 0.05f;
-  xoffset *= sensitivity;
-  yoffset *= sensitivity;
-
-  yaw   += xoffset;
-  pitch += yoffset;
-
-  if(pitch > 89.0f)
-    pitch =  89.0f;
-  if(pitch < -89.0f)
-    pitch = -89.0f;
-
-  glm::vec3 direction;
-  direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-  direction.y = sin(glm::radians(pitch));
-  direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-  cameraFront = glm::normalize(direction);
-}
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -86,6 +43,23 @@ const char *vertexShaderSource = R"(
         ourColor = vCol;
     }
 )";
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+      if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+    lastX = xpos;
+    lastY = ypos;
+
+    camera.processMouseMovement(xoffset, yoffset);
+}
 
 const char *fragmentShaderSource = R"(
     #version 330 core
@@ -126,7 +100,7 @@ int main() {
         glfwTerminate();
         return -1;
     }
-
+ 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
@@ -238,11 +212,11 @@ int main() {
     int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
 
     glm::mat4 model = glm::mat4(1.0f);
-    glm::mat4 view;
     glm::mat4 projection;
-
+    glm::mat4 view;
     double lastTime, currentTime, timeDelta;
     lastTime = glfwGetTime();
+
 
     // render loop
     // -----------
@@ -253,11 +227,11 @@ int main() {
         lastTime = currentTime;
 
         // Input
-        processInput(window);
+        camera.processInput(window);
 
         // Define vertex transformations
         model = glm::rotate(model, glm::radians(5.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        view = camera.getView();
         projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
 
         // Render
