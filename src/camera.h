@@ -32,8 +32,8 @@ class Camera
         }
 
         void processMouseMovement(float xoffset, float yoffset) {
-            yaw   += xoffset;
-            pitch += yoffset;
+            yaw   += xoffset * sensitivity;
+            pitch += yoffset * sensitivity;
 
             if(pitch > 89.0f)
               pitch =  89.0f;
@@ -46,17 +46,15 @@ class Camera
             direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
             front = glm::normalize(direction);
         }
- 
+
     private:
         glm::vec3 position;
         glm::vec3 front;
         glm::vec3 up;
-        
+
         float yaw = 270.0f;
         float pitch = 0.0f;
-        
+
         const float speed = 0.05f;
-        const float sensitivity = 0.01f;
+        const float sensitivity = 0.1f;
 };
-   
-      
