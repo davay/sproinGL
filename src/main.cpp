@@ -5,26 +5,6 @@
 #include <iostream>
 #include "camera.h"
 
-unsigned int SCR_WIDTH = 640;
-unsigned int SCR_HEIGHT = 400;
-
-float lastX = 320, lastY = 200;
-float yaw = 270.0f;
-float pitch = 0.0f;
-bool firstMouse = true;
-
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    // make sure the viewport matches the new window dimensions; note that width and
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
-    SCR_WIDTH = width;
-    SCR_HEIGHT = height;
-}
-
 // Shaders
 const char *vertexShaderSource = R"(
     #version 330 core
@@ -44,23 +24,6 @@ const char *vertexShaderSource = R"(
     }
 )";
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-      if (firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
-
-    lastX = xpos;
-    lastY = ypos;
-
-    camera.processMouseMovement(xoffset, yoffset);
-}
-
 const char *fragmentShaderSource = R"(
     #version 330 core
     #define PI 3.14159265359
@@ -75,10 +38,59 @@ const char *fragmentShaderSource = R"(
       vec2 normalCoord = gl_FragCoord.xy / u_resolution.x;
       vec2 value = sign(sin(normalCoord * PI * gridSize));
       vec3 intensity = vec3(value.x * value.y);
-      // FragColor = vec4(ourColor * intensity, 1.0f);
+      //FragColor = vec4(ourColor * intensity, 1.0f);
       FragColor = vec4(ourColor, 1.0f);
     }
 )";
+
+unsigned int SCR_WIDTH = 640;
+unsigned int SCR_HEIGHT = 400;
+
+float lastX = 320, lastY = 200;
+bool firstMouse = true;
+
+double timeDelta;
+
+Camera camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    // make sure the viewport matches the new window dimensions; note that width and
+    // height will be significantly larger than specified on retina displays.
+    glViewport(0, 0, width, height);
+    SCR_WIDTH = width;
+    SCR_HEIGHT = height;
+}
+
+void processInput(GLFWwindow *window) {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera.processKeyboard(FORWARD, timeDelta);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera.processKeyboard(BACKWARD, timeDelta);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera.processKeyboard(LEFT, timeDelta);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera.processKeyboard(RIGHT, timeDelta);
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+    if (firstMouse) {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos;
+
+    lastX = xpos;
+    lastY = ypos;
+
+    camera.processMouseMovement(xoffset, yoffset);
+}
 
 int main() {
     // glfw: initialize and configure
@@ -94,13 +106,12 @@ int main() {
 
     // glfw window creation
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Chessboard", NULL, NULL);
-    if (window == NULL)
-    {
+    if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
     }
- 
+
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
@@ -140,13 +151,13 @@ int main() {
         std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
     }
 
-    // link shaders
+    // Link shaders
     int shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
 
-    // check for linking errors
+    // Check for linking errors
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
     if (!success) {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
@@ -156,18 +167,18 @@ int main() {
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    // set up vertex data (and buffer(s)) and configure vertex attributes
+    // Set up vertex data (and buffer(s)) and configure vertex attributes
     float vertices[] = {
         // Position          // Color
-         1.0f,  1.0f, 0.0f,  1.0f, 0.0f, 0.0f, // top right
-         1.0f, -1.0f, 0.0f,  0.0f, 1.0f, 0.0f, // bottom right
-        -1.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f, // bottom left
-        -1.0f,  1.0f, 0.0f,  0.0f, 0.0f, 1.0f  // top left
+         1.0f,  1.0f, 0.0f,  1.0f, 0.0f, 0.0f, // Top right
+         1.0f, -1.0f, 0.0f,  0.0f, 1.0f, 0.0f, // Bottom right
+        -1.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f, // Bottom left
+        -1.0f,  1.0f, 0.0f,  0.0f, 0.0f, 1.0f  // Top left
     };
 
     unsigned int indices[] = {
-        0, 1, 3,  // first Triangle
-        1, 2, 3   // second Triangle
+        0, 1, 3,  // First triangle
+        1, 2, 3   // Second triangle
     };
 
     unsigned int vbo, vao, ebo;
@@ -211,12 +222,12 @@ int main() {
     int viewLoc = glGetUniformLocation(shaderProgram, "view");
     int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
 
+    // Offset object further along on the x-axis
     glm::mat4 model = glm::mat4(1.0f);
-    glm::mat4 projection;
-    glm::mat4 view;
-    double lastTime, currentTime, timeDelta;
-    lastTime = glfwGetTime();
+    model = glm::translate(model, glm::vec3(10.0f, 0.0f, 0.0f));
 
+    double lastTime = glfwGetTime();
+    double currentTime = lastTime;
 
     // render loop
     // -----------
@@ -227,12 +238,12 @@ int main() {
         lastTime = currentTime;
 
         // Input
-        camera.processInput(window);
+        processInput(window);
 
         // Define vertex transformations
         model = glm::rotate(model, glm::radians(5.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        view = camera.getView();
-        projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 view = camera.getView();
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
 
         // Render
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
