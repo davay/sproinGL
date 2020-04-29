@@ -7,7 +7,7 @@
 
 // Shaders
 const char *vertexShaderSource = R"(
-    #version 460 core
+    #version 410 core
 
     layout (location = 0) in vec3 vPos;
     layout (location = 1) in vec3 vCol;
@@ -25,7 +25,7 @@ const char *vertexShaderSource = R"(
 )";
 
 const char *fragmentShaderSource = R"(
-    #version 460 core
+    #version 410 core
     #define PI 3.14159265359
 
     uniform vec2 u_resolution;
@@ -96,7 +96,7 @@ int main() {
     // glfw: initialize and configure
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 #ifdef __APPLE__
