@@ -1,3 +1,4 @@
 add_subdirectory(glm) 
 add_subdirectory(glad)
 add_subdirectory(bloomenthal)
+add_subdirectory(assimp)
