@@ -27,7 +27,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 // Shaders
 const char *vertexShaderSource = R"(
-    #version 330 core
+    #version 460 core
 
     layout (location = 0) in vec3 vPos;
     layout (location = 1) in vec3 vCol;
@@ -62,7 +62,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 }
 
 const char *fragmentShaderSource = R"(
-    #version 330 core
+    #version 460 core
     #define PI 3.14159265359
 
     uniform vec2 u_resolution;
@@ -83,8 +83,8 @@ const char *fragmentShaderSource = R"(
 int main() {
     // glfw: initialize and configure
     glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 #ifdef __APPLE__
