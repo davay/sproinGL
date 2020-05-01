@@ -119,8 +119,8 @@ int main() {
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // glad: load all OpenGL function pointers
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -128,7 +128,7 @@ int main() {
         return -1;
     }
 
-    // build and compile our shader program
+    // Build and compile our shader program
     int shaderProgram = LinkProgramViaCode(&vertexShaderSource, &fragmentShaderSource);
 
     float vertices[] = {
@@ -169,34 +169,24 @@ int main() {
 
     glBindVertexArray(0);
 
-    // Get shader uniform locations
-    int resolutionLocation = glGetUniformLocation(shaderProgram, "u_resolution");
-    int modelLoc = glGetUniformLocation(shaderProgram, "model");
-    int viewLoc = glGetUniformLocation(shaderProgram, "view");
-    int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
-
     double lastTime = glfwGetTime();
-    double currentTime = lastTime;
 
     mat4 model = Translate(0.0f, 0.0f, 0.0f);
     mat4 view = Translate(0.0f, 0.0f, -10.0f) * RotateX(10.0f);
-    float angle = 0.0f;
 
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window)) {
         // Get timestep
-        currentTime = glfwGetTime();
-        timeDelta = currentTime = lastTime;
+        double currentTime = glfwGetTime();
+        timeDelta = currentTime - lastTime;
         lastTime = currentTime;
 
         // Input
         processInput(window);
 
-        angle += currentTime * 20.0f;
-
         // Define vertex transformations
-        model = RotateY(angle);
+        model = RotateY(currentTime * 100.0f);
         mat4 projection = Perspective(45.0f, (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
 
         // Render
@@ -206,12 +196,10 @@ int main() {
         glUseProgram(shaderProgram);
 
         // Set shader uniforms
-        glUniform2f(resolutionLocation, SCR_WIDTH, SCR_HEIGHT);
-        //glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        //glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-        //glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-        //SetUniform(shaderProgram, "u_resolution", SCR_WIDTH, SCR_HEIGHT);
+        // Get shader uniform locations
+        //int resolutionLocation = glGetUniformLocation(shaderProgram, "u_resolution");
+        //glUniform2f(resolutionLocation, SCR_WIDTH, SCR_HEIGHT);
+        SetUniform(shaderProgram, "u_resolution", vec2(SCR_WIDTH, SCR_HEIGHT));
         SetUniform(shaderProgram, "model", model);
         SetUniform(shaderProgram, "view", view);
         SetUniform(shaderProgram, "projection", projection);
