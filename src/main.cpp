@@ -5,6 +5,7 @@
 #include <iostream>
 #include "Camera.h"
 #include "GLXtras.h"
+#include "VecMat.h"
 
 
 // Shaders
@@ -21,8 +22,7 @@ const char *vertexShaderSource = R"(
     out vec3 ourColor;
 
     void main() {
-        //gl_Position = projection * view * model * vec4(vPos, 1.0);
-        gl_Position = vec4(vPos, 1.0);
+        gl_Position = projection * view * model * vec4(vPos, 1.0);
         ourColor = vCol;
     }
 )";
@@ -51,6 +51,8 @@ unsigned int SCR_HEIGHT = 400;
 
 float lastX = 320, lastY = 200;
 bool firstMouse = true;
+
+Camera camera((float) SCR_WIDTH / (2 * SCR_HEIGHT), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, -10.0f), 30);
 
 double timeDelta;
 
@@ -129,28 +131,6 @@ int main() {
     // build and compile our shader program
     int shaderProgram = LinkProgramViaCode(&vertexShaderSource, &fragmentShaderSource);
 
-    /*
-    // vertex shader
-    int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-
-    // fragment shader
-    int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-
-    // Link shaders
-
-    int shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-    */
-
     float vertices[] = {
         // Position          // Color
          1.0f,  1.0f, 0.0f,  1.0f, 0.0f, 0.0f, // Top right
@@ -198,8 +178,9 @@ int main() {
     double lastTime = glfwGetTime();
     double currentTime = lastTime;
 
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(10.0f, 0.0f, 0.0f));
+    mat4 model = Translate(0.0f, 0.0f, 0.0f);
+    mat4 view = Translate(0.0f, 0.0f, -10.0f) * RotateX(10.0f);
+    float angle = 0.0f;
 
     // render loop
     // -----------
@@ -212,10 +193,11 @@ int main() {
         // Input
         processInput(window);
 
+        angle += currentTime * 20.0f;
+
         // Define vertex transformations
-        model = glm::rotate(model, glm::radians(5.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        glm::mat4 view = glm::mat4(1.0f); //camera.getView();
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
+        model = RotateY(angle);
+        mat4 projection = Perspective(45.0f, (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
 
         // Render
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -225,9 +207,15 @@ int main() {
 
         // Set shader uniforms
         glUniform2f(resolutionLocation, SCR_WIDTH, SCR_HEIGHT);
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        //glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         //glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+        //glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+        //SetUniform(shaderProgram, "u_resolution", SCR_WIDTH, SCR_HEIGHT);
+        SetUniform(shaderProgram, "model", model);
+        SetUniform(shaderProgram, "view", view);
+        SetUniform(shaderProgram, "projection", projection);
+
 
         glBindVertexArray(vao); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         //glDrawArrays(GL_TRIANGLES, 0, 6);
