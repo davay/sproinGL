@@ -4,6 +4,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include "Camera.h"
+#include "GLXtras.h"
 
 
 // Shaders
@@ -20,7 +21,8 @@ const char *vertexShaderSource = R"(
     out vec3 ourColor;
 
     void main() {
-        gl_Position = projection * view * model * vec4(vPos, 1.0);
+        //gl_Position = projection * view * model * vec4(vPos, 1.0);
+        gl_Position = vec4(vPos, 1.0);
         ourColor = vCol;
     }
 )";
@@ -52,9 +54,6 @@ bool firstMouse = true;
 
 double timeDelta;
 
-const char *cubeObj = "../assets/cube.obj";
-const char *catTex = "C:/Users/jules/SeattleUniversity/Web/Models/Cat.tga";
-
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     // make sure the viewport matches the new window dimensions; note that width and
@@ -68,7 +67,7 @@ void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-/*
+        /*
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera.processKeyboard(FORWARD, timeDelta);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -128,7 +127,9 @@ int main() {
     }
 
     // build and compile our shader program
+    int shaderProgram = LinkProgramViaCode(&vertexShaderSource, &fragmentShaderSource);
 
+    /*
     // vertex shader
     int vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
@@ -140,6 +141,7 @@ int main() {
     glCompileShader(fragmentShader);
 
     // Link shaders
+
     int shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
@@ -147,6 +149,7 @@ int main() {
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+    */
 
     float vertices[] = {
         // Position          // Color
@@ -211,7 +214,7 @@ int main() {
 
         // Define vertex transformations
         model = glm::rotate(model, glm::radians(5.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        //glm::mat4 view = camera.getView();
+        glm::mat4 view = glm::mat4(1.0f); //camera.getView();
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
 
         // Render
