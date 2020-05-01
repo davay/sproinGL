@@ -1,3 +1,6 @@
 add_subdirectory(glm) 
 add_subdirectory(glad)
+add_subdirectory(GL)
 add_subdirectory(bloomenthal)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)

@@ -1,3 +1,5 @@
-add_library(GLXtras GLXtras.cpp)
-add_library(Mesh Mesh.cpp)
-target_include_directories(GLXtras PUBLIC ../glad .)
+find_package(glfw3 3.3 REQUIRED)
+add_library(bloomenthal Camera.cpp CameraArcball.cpp Color.cpp Draw.cpp GLXtras.cpp Lights.cpp Mesh.cpp Misc.cpp Numbers.cpp Polygonizer.cpp Quaternion.cpp Slider.cpp Sphere.cpp Widgets.cpp)
+target_include_directories(bloomenthal PUBLIC ../glad .)
+target_include_directories(bloomenthal PUBLIC ../GL .)
+target_link_libraries(bloomenthal glfw)

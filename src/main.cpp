@@ -3,7 +3,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
-#include "camera.h"
+#include "Camera.h"
+
 
 // Shaders
 const char *vertexShaderSource = R"(
@@ -51,7 +52,8 @@ bool firstMouse = true;
 
 double timeDelta;
 
-Camera camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+const char *cubeObj = "../assets/cube.obj";
+const char *catTex = "C:/Users/jules/SeattleUniversity/Web/Models/Cat.tga";
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -66,6 +68,7 @@ void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
+/*
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera.processKeyboard(FORWARD, timeDelta);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -74,6 +77,7 @@ void processInput(GLFWwindow *window) {
         camera.processKeyboard(LEFT, timeDelta);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.processKeyboard(RIGHT, timeDelta);
+        */
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
@@ -89,7 +93,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     lastX = xpos;
     lastY = ypos;
 
-    camera.processMouseMovement(xoffset, yoffset);
+    //camera.processMouseMovement(xoffset, yoffset);
 }
 
 int main() {
@@ -124,32 +128,16 @@ int main() {
     }
 
     // build and compile our shader program
-    int success;
-    char infoLog[512];
 
     // vertex shader
     int vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
 
-    // check for shader compile errors
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
     // fragment shader
     int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
-
-    // check for shader compile errors
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
 
     // Link shaders
     int shaderProgram = glCreateProgram();
@@ -157,17 +145,9 @@ int main() {
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
 
-    // Check for linking errors
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
-
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    // Set up vertex data (and buffer(s)) and configure vertex attributes
     float vertices[] = {
         // Position          // Color
          1.0f,  1.0f, 0.0f,  1.0f, 0.0f, 0.0f, // Top right
@@ -186,7 +166,6 @@ int main() {
     glGenBuffers(1, &vbo);
     glGenBuffers(1, &ebo);
 
-    // Bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
     glBindVertexArray(vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -203,18 +182,9 @@ int main() {
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    // remember: do NOT unbind the EBO while a VAO is active as the bound element buffer object IS stored in the VAO; keep the EBO bound.
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-    // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-    // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind EBOs (nor VBOs) when it's not directly necessary.
     glBindVertexArray(0);
-
-    // uncomment this call to draw in wireframe polygons.
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // Get shader uniform locations
     int resolutionLocation = glGetUniformLocation(shaderProgram, "u_resolution");
@@ -222,12 +192,11 @@ int main() {
     int viewLoc = glGetUniformLocation(shaderProgram, "view");
     int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
 
-    // Offset object further along on the x-axis
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(10.0f, 0.0f, 0.0f));
-
     double lastTime = glfwGetTime();
     double currentTime = lastTime;
+
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(10.0f, 0.0f, 0.0f));
 
     // render loop
     // -----------
@@ -242,7 +211,7 @@ int main() {
 
         // Define vertex transformations
         model = glm::rotate(model, glm::radians(5.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        glm::mat4 view = camera.getView();
+        //glm::mat4 view = camera.getView();
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
 
         // Render
@@ -254,7 +223,7 @@ int main() {
         // Set shader uniforms
         glUniform2f(resolutionLocation, SCR_WIDTH, SCR_HEIGHT);
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        //glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
         glBindVertexArray(vao); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
