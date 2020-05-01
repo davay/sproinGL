@@ -16,13 +16,12 @@ const char *vertexShaderSource = R"(
     layout (location = 1) in vec3 vCol;
 
     uniform mat4 model;
-    uniform mat4 view;
-    uniform mat4 projection;
+    uniform mat4 cameraView;
 
     out vec3 ourColor;
 
     void main() {
-        gl_Position = projection * view * model * vec4(vPos, 1.0);
+        gl_Position = cameraView * model * vec4(vPos, 1.0);
         ourColor = vCol;
     }
 )";
@@ -52,7 +51,7 @@ unsigned int SCR_HEIGHT = 400;
 float lastX = 320, lastY = 200;
 bool firstMouse = true;
 
-Camera camera((float) SCR_WIDTH / (2 * SCR_HEIGHT), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, -10.0f), 30);
+Camera camera(SCR_WIDTH, SCR_HEIGHT, vec3(20.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, -20.0f), 30);
 
 double timeDelta;
 
@@ -65,36 +64,46 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     SCR_HEIGHT = height;
 }
 
-void processInput(GLFWwindow *window) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
-        /*
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.processKeyboard(FORWARD, timeDelta);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.processKeyboard(BACKWARD, timeDelta);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.processKeyboard(LEFT, timeDelta);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.processKeyboard(RIGHT, timeDelta);
-        */
+bool Shift(GLFWwindow *w) {
+    return glfwGetKey(w, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
+           glfwGetKey(w, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
 }
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-    if (firstMouse) {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
+void MouseButton(GLFWwindow *w, int butn, int action, int mods) {
+    if (action == GLFW_PRESS) {
+        double x, y;
+        glfwGetCursorPos(w, &x, &y);
+        camera.MouseDown((int) x, (int) y);
     }
+    if (action == GLFW_RELEASE)
+        camera.MouseUp();
+}
 
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos;
+void MouseMove(GLFWwindow *w, double x, double y) {
+    if (glfwGetMouseButton(w, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+        camera.MouseDrag((int) x, (int) y, Shift(w));
+}
 
-    lastX = xpos;
-    lastY = ypos;
+void MouseWheel(GLFWwindow *w, double xoffset, double yoffset) {
+    camera.MouseWheel(yoffset, Shift(w));
+}
 
-    //camera.processMouseMovement(xoffset, yoffset);
+void Keyboard(GLFWwindow *window, int key, int scancode, int action, int mods) {
+    if (action == GLFW_PRESS) {
+        float fieldOfView = camera.GetFOV();
+        bool shift = mods & GLFW_MOD_SHIFT;
+        if (key == GLFW_KEY_ESCAPE)
+            glfwSetWindowShouldClose(window, GLFW_TRUE);
+        fieldOfView += key == 'F'? shift? -5 : 5 : 0;
+        fieldOfView = fieldOfView < 5? 5 : fieldOfView > 150? 150 : fieldOfView;
+        //cubeStretch *= key == 'S'? shift? .9f : 1.1f : 1;
+        //cubeStretch = cubeStretch < .02f? .02f : cubeStretch;
+        camera.SetFOV(fieldOfView);
+    }
+}
+
+void Resize(GLFWwindow *window, int width, int height) {
+    camera.Resize(width/2, height);
 }
 
 int main() {
@@ -120,7 +129,7 @@ int main() {
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetCursorPosCallback(window, mouse_callback);
+    //glfwSetCursorPosCallback(window, mouse_callback);
 
     // glad: load all OpenGL function pointers
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -130,6 +139,13 @@ int main() {
 
     // Build and compile our shader program
     int shaderProgram = LinkProgramViaCode(&vertexShaderSource, &fragmentShaderSource);
+
+    // callbacks
+    glfwSetCursorPosCallback(window, MouseMove);
+    glfwSetMouseButtonCallback(window, MouseButton);
+    glfwSetScrollCallback(window, MouseWheel);
+    glfwSetKeyCallback(window, Keyboard);
+    glfwSetWindowSizeCallback(window, Resize);
 
     float vertices[] = {
         // Position          // Color
@@ -172,7 +188,6 @@ int main() {
     double lastTime = glfwGetTime();
 
     mat4 model = Translate(0.0f, 0.0f, 0.0f);
-    mat4 view = Translate(0.0f, 0.0f, -10.0f) * RotateX(10.0f);
 
     // render loop
     // -----------
@@ -183,11 +198,10 @@ int main() {
         lastTime = currentTime;
 
         // Input
-        processInput(window);
+        //processInput(window);
 
         // Define vertex transformations
         model = RotateY(currentTime * 100.0f);
-        mat4 projection = Perspective(45.0f, (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
 
         // Render
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -196,14 +210,9 @@ int main() {
         glUseProgram(shaderProgram);
 
         // Set shader uniforms
-        // Get shader uniform locations
-        //int resolutionLocation = glGetUniformLocation(shaderProgram, "u_resolution");
-        //glUniform2f(resolutionLocation, SCR_WIDTH, SCR_HEIGHT);
         SetUniform(shaderProgram, "u_resolution", vec2(SCR_WIDTH, SCR_HEIGHT));
         SetUniform(shaderProgram, "model", model);
-        SetUniform(shaderProgram, "view", view);
-        SetUniform(shaderProgram, "projection", projection);
-
+        SetUniform(shaderProgram, "cameraView", camera.fullview);
 
         glBindVertexArray(vao); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         //glDrawArrays(GL_TRIANGLES, 0, 6);
