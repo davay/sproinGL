@@ -1,20 +1,49 @@
 #include "Camera.h"
+#include "Draw.h"
 #include "GLXtras.h"
+#include "Mesh.h"
+#include "Misc.h"
 #include "VecMat.h"
+
 #include <glad.h>
 #include <GLFW/glfw3.h>
-#include <iostream>
 
+#include <iostream>
+#include <stdio.h>
+
+class Mesh {
+public:
+    vector<vec3> points;
+    vector<vec3> normals;
+    vector<vec2> uvs;
+    vector<int3> triangles;
+    mat4 xform;
+    GLuint vbo, vao;
+
+    Mesh() { };
+
+    bool Read(const char *meshName, const char *textureName) {
+        if (!ReadAsciiObj(meshName, points, triangles, &normals, &uvs)) {
+            printf("can't read %s\n", meshName);
+            return false;
+        }
+
+        return true;
+    }
+
+    void Buffer() {
+    }
+
+    void Draw() {
+    }
+};
 
 // Shaders
 const char *vertexShaderSource = R"(
     #version 410 core
-
     layout (location = 0) in vec3 vPos;
-
     uniform mat4 model;
     uniform mat4 cameraView;
-
     void main() {
         gl_Position = cameraView * model * vec4(vPos, 1.0);
     }
@@ -22,10 +51,8 @@ const char *vertexShaderSource = R"(
 
 const char *fragmentShaderSource = R"(
     #version 410 core
-
     in vec3 ourColor;
     out vec4 FragColor;
-
     void main() {
       FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
     }
@@ -35,6 +62,10 @@ unsigned int SCR_WIDTH = 640;
 unsigned int SCR_HEIGHT = 400;
 
 Camera camera(SCR_WIDTH, SCR_HEIGHT, vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, -10.0f), 30);
+
+Mesh mesh;
+const char *cubeObj = "./assets/cube.obj";
+const char *catTex = "‎⁨.⁩/assets/lily.tga⁩";
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -115,6 +146,8 @@ int main() {
     glfwSetKeyCallback(window, Keyboard);
     glfwSetWindowSizeCallback(window, Resize);
 
+    mesh.Read(cubeObj, catTex);
+
     float vertices[] = {
          1.0f,  1.0f, 0.0f,
          1.0f, -1.0f, 0.0f,
@@ -150,7 +183,7 @@ int main() {
         SetUniform(shaderProgram, "cameraView", camera.fullview);
 
         glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
         glBindVertexArray(0);
 
         glfwSwapBuffers(window);
