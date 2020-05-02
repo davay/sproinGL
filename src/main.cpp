@@ -18,42 +18,37 @@ public:
     vector<vec2> uvs;
     vector<int3> triangles;
     mat4 xform;
-    unsigned int vbo, vao;
+    unsigned int vbo, vao, ebo;
 
     Mesh() { };
 
     bool Read(const char *meshName, const char *textureName) {
         ReadAsciiObj(meshName, points, triangles, &normals, &uvs);
+
+        Buffer();
         return true;
     }
 
     void Buffer() {
-        /*
-        int sizePoints = points.size() * sizeof(vec3);
-
         glGenVertexArrays(1, &vao);
         glGenBuffers(1, &vbo);
+        glGenBuffers(1, &ebo);
 
         glBindVertexArray(vao);
-
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizePoints, NULL, GL_STATIC_DRAW);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizePoints, &points[0]);
 
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
+        int bufferSize = points.size() * sizeof(vec3);
+        glBufferData(GL_ARRAY_BUFFER, bufferSize, NULL, GL_STATIC_DRAW);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, bufferSize, &points[0]);
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-        */
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangles.size() * sizeof(vec3), &triangles[0], GL_STATIC_DRAW);
     }
 
-    void Draw() {
-        /*
+    void Draw(int shaderProgram) {
         glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        glBindVertexArray(0);
-        */
+        VertexAttribPointer(shaderProgram, "point", 3, 0, (void *) 0);
+        glDrawElements(GL_TRIANGLES, 3 * triangles.size(), GL_UNSIGNED_INT, 0);
     }
 };
 
@@ -80,11 +75,8 @@ const char *fragmentShaderSource = R"(
 unsigned int SCR_WIDTH = 640;
 unsigned int SCR_HEIGHT = 400;
 
-Camera camera(SCR_WIDTH, SCR_HEIGHT, vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, -10.0f), 30);
-
+Camera camera(SCR_WIDTH, SCR_HEIGHT, vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, -8.0f), 30);
 Mesh mesh;
-const char *cubeObj = "./assets/cube.obj";
-const char *catTex = "‎⁨.⁩/assets/lily.tga⁩";
 
 bool Shift(GLFWwindow *w) {
     return glfwGetKey(w, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
@@ -156,24 +148,7 @@ int main() {
     glfwSetKeyCallback(window, Keyboard);
     glfwSetWindowSizeCallback(window, Resize);
 
-    mesh.Read(cubeObj, catTex);
-
-    std::vector<vec3> points {
-        vec3(1.0f,  1.0f, 0.0f),
-        vec3(1.0f, -1.0f, 0.0f),
-        vec3(-1.0f, -1.0f, 0.0f)
-    };
-
-    unsigned int vbo, vao;
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-
-    glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-    int bufferSize = points.size() * sizeof(vec3);
-    glBufferData(GL_ARRAY_BUFFER, bufferSize, NULL, GL_STATIC_DRAW);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, bufferSize, &points[0]);
+    mesh.Read("./assets/cat.obj", "‎⁨.⁩/assets/lily.tga⁩");
 
     mat4 model = Translate(0.0f, 0.0f, 0.0f);
 
@@ -182,21 +157,14 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
-
-        // Set shader uniforms
         SetUniform(shaderProgram, "model", model);
         SetUniform(shaderProgram, "cameraView", camera.fullview);
 
-        glBindVertexArray(vao);
-        VertexAttribPointer(shaderProgram, "point", 3, 0, (void *) 0);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        mesh.Draw(shaderProgram);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-    glDeleteVertexArrays(1, &vao);
-    glDeleteBuffers(1, &vbo);
 
     glfwTerminate();
 
