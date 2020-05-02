@@ -18,34 +18,53 @@ public:
     vector<vec2> uvs;
     vector<int3> triangles;
     mat4 xform;
-    GLuint vbo, vao;
+    unsigned int vbo, vao;
 
     Mesh() { };
 
     bool Read(const char *meshName, const char *textureName) {
-        if (!ReadAsciiObj(meshName, points, triangles, &normals, &uvs)) {
-            printf("can't read %s\n", meshName);
-            return false;
-        }
-
+        ReadAsciiObj(meshName, points, triangles, &normals, &uvs);
         return true;
     }
 
     void Buffer() {
+        /*
+        int sizePoints = points.size() * sizeof(vec3);
+
+        glGenVertexArrays(1, &vao);
+        glGenBuffers(1, &vbo);
+
+        glBindVertexArray(vao);
+
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizePoints, NULL, GL_STATIC_DRAW);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizePoints, &points[0]);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+        */
     }
 
     void Draw() {
+        /*
+        glBindVertexArray(vao);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindVertexArray(0);
+        */
     }
 };
 
 // Shaders
 const char *vertexShaderSource = R"(
     #version 410 core
-    layout (location = 0) in vec3 vPos;
+    layout (location = 0) in vec3 point;
     uniform mat4 model;
     uniform mat4 cameraView;
     void main() {
-        gl_Position = cameraView * model * vec4(vPos, 1.0);
+        gl_Position = cameraView * model * vec4(point, 1.0);
     }
 )";
 
@@ -66,15 +85,6 @@ Camera camera(SCR_WIDTH, SCR_HEIGHT, vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, -1
 Mesh mesh;
 const char *cubeObj = "./assets/cube.obj";
 const char *catTex = "‎⁨.⁩/assets/lily.tga⁩";
-
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-    // make sure the viewport matches the new window dimensions; note that width and
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
-    SCR_WIDTH = width;
-    SCR_HEIGHT = height;
-}
 
 bool Shift(GLFWwindow *w) {
     return glfwGetKey(w, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
@@ -131,7 +141,7 @@ int main() {
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Chessboard", NULL, NULL);
 
     glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    //glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // glad: load all OpenGL function pointers
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
@@ -148,10 +158,10 @@ int main() {
 
     mesh.Read(cubeObj, catTex);
 
-    float vertices[] = {
-         1.0f,  1.0f, 0.0f,
-         1.0f, -1.0f, 0.0f,
-        -1.0f, -1.0f, 0.0f,
+    std::vector<vec3> points {
+        vec3(1.0f,  1.0f, 0.0f),
+        vec3(1.0f, -1.0f, 0.0f),
+        vec3(-1.0f, -1.0f, 0.0f)
     };
 
     unsigned int vbo, vao;
@@ -159,16 +169,11 @@ int main() {
     glGenBuffers(1, &vbo);
 
     glBindVertexArray(vao);
-
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    int bufferSize = points.size() * sizeof(vec3);
+    glBufferData(GL_ARRAY_BUFFER, bufferSize, NULL, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, bufferSize, &points[0]);
 
     mat4 model = Translate(0.0f, 0.0f, 0.0f);
 
@@ -183,8 +188,8 @@ int main() {
         SetUniform(shaderProgram, "cameraView", camera.fullview);
 
         glBindVertexArray(vao);
+        VertexAttribPointer(shaderProgram, "point", 3, 0, (void *) 0);
         glDrawArrays(GL_TRIANGLES, 0, 3);
-        glBindVertexArray(0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
