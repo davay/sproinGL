@@ -1,3 +1,5 @@
+#include "model.h"
+
 #include "Camera.h"
 #include "Draw.h"
 #include "GLXtras.h"
@@ -11,55 +13,14 @@
 #include <iostream>
 #include <stdio.h>
 
-class Mesh {
-public:
-    vector<vec3> points;
-    vector<vec3> normals;
-    vector<vec2> uvs;
-    vector<int3> triangles;
-    mat4 xform;
-    unsigned int vbo, vao, ebo;
-
-    Mesh() { };
-
-    bool Read(const char *meshName, const char *textureName) {
-        ReadAsciiObj(meshName, points, triangles, &normals, &uvs);
-
-        Buffer();
-        return true;
-    }
-
-    void Buffer() {
-        glGenVertexArrays(1, &vao);
-        glGenBuffers(1, &vbo);
-        glGenBuffers(1, &ebo);
-
-        glBindVertexArray(vao);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-        int bufferSize = points.size() * sizeof(vec3);
-        glBufferData(GL_ARRAY_BUFFER, bufferSize, NULL, GL_STATIC_DRAW);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, bufferSize, &points[0]);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangles.size() * sizeof(vec3), &triangles[0], GL_STATIC_DRAW);
-    }
-
-    void Draw(int shaderProgram) {
-        glBindVertexArray(vao);
-        VertexAttribPointer(shaderProgram, "point", 3, 0, (void *) 0);
-        glDrawElements(GL_TRIANGLES, 3 * triangles.size(), GL_UNSIGNED_INT, 0);
-    }
-};
-
 // Shaders
 const char *vertexShaderSource = R"(
     #version 410 core
     layout (location = 0) in vec3 point;
-    uniform mat4 model;
+    uniform mat4 modelTrans;
     uniform mat4 cameraView;
     void main() {
-        gl_Position = cameraView * model * vec4(point, 1.0);
+        gl_Position = cameraView * modelTrans * vec4(point, 1.0);
     }
 )";
 
@@ -76,7 +37,7 @@ unsigned int SCR_WIDTH = 640;
 unsigned int SCR_HEIGHT = 400;
 
 Camera camera(SCR_WIDTH, SCR_HEIGHT, vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, -8.0f), 30);
-Mesh mesh;
+Model model;
 
 bool Shift(GLFWwindow *w) {
     return glfwGetKey(w, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
@@ -148,19 +109,27 @@ int main() {
     glfwSetKeyCallback(window, Keyboard);
     glfwSetWindowSizeCallback(window, Resize);
 
-    mesh.Read("./assets/cat.obj", "‎⁨.⁩/assets/lily.tga⁩");
+    model.read("./assets/cube.obj", "‎⁨.⁩/assets/lily.tga⁩");
 
-    mat4 model = Translate(0.0f, 0.0f, 0.0f);
+    double lastTime = glfwGetTime();
+    mat4 modelTrans = Translate(0.0f, 0.0f, 0.0f);
 
     while (!glfwWindowShouldClose(window)) {
+        double currentTime = glfwGetTime();
+        double timeDelta = currentTime - lastTime;
+        lastTime = currentTime;
+
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        // Define vertex transformations
+        modelTrans = RotateY(currentTime * 100.0f);
+
         glUseProgram(shaderProgram);
-        SetUniform(shaderProgram, "model", model);
+        SetUniform(shaderProgram, "modelTrans", modelTrans);
         SetUniform(shaderProgram, "cameraView", camera.fullview);
 
-        mesh.Draw(shaderProgram);
+        model.draw(shaderProgram);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
