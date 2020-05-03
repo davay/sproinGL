@@ -16,20 +16,43 @@
 // Shaders
 const char *vertexShaderSource = R"(
     #version 410 core
+
     layout (location = 0) in vec3 point;
+    layout (location = 1) in vec3 normal;
+
+    out vec3 vPoint;
+    out vec3 vNormal;
+
     uniform mat4 modelTrans;
     uniform mat4 cameraView;
+
     void main() {
+        vPoint = (modelTrans * vec4(point, 1)).xyz;
+        vNormal = (modelTrans * vec4(normal, 0)).xyz;
         gl_Position = cameraView * modelTrans * vec4(point, 1.0);
     }
 )";
 
 const char *fragmentShaderSource = R"(
     #version 410 core
-    in vec3 ourColor;
-    out vec4 FragColor;
+
+    in vec3 vPoint;
+    in vec3 vNormal;
+
+    out vec4 fragColor;
+
     void main() {
-      FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+        vec3 light = vec3(2.0f, 2.0f, 2.0f);
+        vec3 N = normalize(vNormal);            // surface normal
+        vec3 L = normalize(light - vPoint);     // light vector
+        vec3 E = normalize(vPoint);             // eye vector
+        vec3 R = reflect(L, N);                 // highlight vector
+        float d = dot(N, L);                    //  diffuse
+        float s = dot(R, E);                    //  specular
+        //float intensity = clamp(d + pow(s, 50.0f), 0.0f, 1.0f);
+        float intensity = clamp(d, 0.0f, 1.0f);
+        vec3 rgb = vec3(1.0f, 0.5f, 0.2f) * intensity;
+        fragColor = vec4(rgb, 1.0f);
     }
 )";
 
@@ -91,7 +114,7 @@ int main() {
 #endif
 
     // glfw window creation
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Chessboard", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Vertex Attrib", NULL, NULL);
 
     glfwMakeContextCurrent(window);
     //glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -120,10 +143,11 @@ int main() {
         lastTime = currentTime;
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
 
         // Define vertex transformations
-        modelTrans = RotateY(currentTime * 100.0f);
+        modelTrans = RotateY(currentTime * 20.0f);
 
         glUseProgram(shaderProgram);
         SetUniform(shaderProgram, "modelTrans", modelTrans);

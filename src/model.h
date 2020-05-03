@@ -27,20 +27,23 @@ public:
     }
 
     void buffer() {
-        int bufferSize = points.size() * sizeof(vec3);
+        int pointsSize = points.size() * sizeof(vec3);
+        int normalsSize = normals.size() * sizeof(vec3);
+        int bufferSize = pointsSize + normalsSize;
 
         // Generate buffers
         glGenVertexArrays(1, &vao);
         glGenBuffers(1, &vbo);
         glGenBuffers(1, &ebo);
 
-        // Bind vertex array
+        // Bind vertex array object
         glBindVertexArray(vao);
 
         // Bind and set vertex buffer data
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, bufferSize, NULL, GL_STATIC_DRAW);
         glBufferSubData(GL_ARRAY_BUFFER, 0, bufferSize, &points[0]);
+        glBufferSubData(GL_ARRAY_BUFFER, pointsSize, normalsSize, &normals[0]);
 
         // Bind and set element buffer data
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
@@ -48,8 +51,16 @@ public:
     }
 
     void draw(int shaderProgram) {
+        int pointsSize = points.size() * sizeof(vec3);
+
+        // Use model's vertex array object
         glBindVertexArray(vao);
+
+        // Set vertex attributes
         VertexAttribPointer(shaderProgram, "point", 3, 0, (void *) 0);
+        VertexAttribPointer(shaderProgram, "normal", 3, 0, (void *) pointsSize);
+
+        // Draw triangles
         glDrawElements(GL_TRIANGLES, 3 * triangles.size(), GL_UNSIGNED_INT, 0);
     }
 };
