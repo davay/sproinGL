@@ -48,6 +48,9 @@ public:
         // Bind and set element buffer data
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangles.size() * sizeof(vec3), &triangles[0], GL_STATIC_DRAW);
+
+        glBindVertexArray(0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
     void draw(int shaderProgram) {
@@ -56,11 +59,28 @@ public:
         // Use model's vertex array object
         glBindVertexArray(vao);
 
+        // Use the model's model-to-world transform
+        SetUniform(shaderProgram, "modelTrans", xform);
+
         // Set vertex attributes
         VertexAttribPointer(shaderProgram, "point", 3, 0, (void *) 0);
         VertexAttribPointer(shaderProgram, "normal", 3, 0, (void *) pointsSize);
 
         // Draw triangles
         glDrawElements(GL_TRIANGLES, 3 * triangles.size(), GL_UNSIGNED_INT, 0);
+
+        SetUniform(shaderProgram, "modelTrans", Translate(-10.0f, 0.0f, 10.0f));
+        glDrawElements(GL_TRIANGLES, 3 * triangles.size(), GL_UNSIGNED_INT, 0);
+
+        SetUniform(shaderProgram, "modelTrans", Translate(10.0f, 0.0f, 10.0f));
+        glDrawElements(GL_TRIANGLES, 3 * triangles.size(), GL_UNSIGNED_INT, 0);
+
+        SetUniform(shaderProgram, "modelTrans", Translate(-10.0f, 0.0f, -10.0f));
+        glDrawElements(GL_TRIANGLES, 3 * triangles.size(), GL_UNSIGNED_INT, 0);
+
+        SetUniform(shaderProgram, "modelTrans", Translate(10.0f, 0.0f, -10.0f));
+        glDrawElements(GL_TRIANGLES, 3 * triangles.size(), GL_UNSIGNED_INT, 0);
+
+        glBindVertexArray(0);
     }
 };

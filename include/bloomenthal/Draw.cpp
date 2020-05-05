@@ -125,7 +125,7 @@ void ScreenLine(float xscreen, float yscreen, mat4 modelview, mat4 persp, vec3 &
 int drawShader = 0;
 
 const char *drawVShader = R"(
-    #version 130
+    #version 410 core
     in vec3 position;
     in vec3 color;
     out vec3 vColor;
@@ -137,7 +137,7 @@ const char *drawVShader = R"(
 )";
 
 const char *drawPShader = R"(
-    #version 130
+    #version 410 core
     in vec3 vColor;
     out vec4 pColor;
     uniform float opacity = 1;
