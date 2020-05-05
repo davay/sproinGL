@@ -144,34 +144,42 @@ int main() {
 
     srand(time(NULL));
     for (int i = 0; i < 100; i++) {
-        particles.push_back(Particle(vec3(rand() % 10 - 5, rand() % 10 - 5, rand() % 10 - 5), rand()));
+        vec3 position(rand() % 10 - 5, rand() % 10 - 5, rand() % 10 - 5);
+        vec3 velocity((rand() % 100 - 50) * 0.005, (rand() % 50) * 0.005, (rand() % 100 - 50) * 0.005);
+        Particle particle(position, velocity);
+        //particles.push_back(particle);
     }
 
     double lastTime = glfwGetTime();
+    double particleTimer = 0;
 
     while (!glfwWindowShouldClose(window)) {
         double currentTime = glfwGetTime();
         double timeDelta = currentTime - lastTime;
-
-
-        if ((int) currentTime % 2 == 0 && (int) lastTime % 2 != 0) {
-            particles.push_back(Particle(vec3(0.0f, 5.0f, 0.0f), rand()));
-        }
-
         lastTime = currentTime;
+
+        particleTimer++;
+        if (particleTimer > 10) {
+            vec3 position(9.0f, 9.0f, -9.0f);
+            vec3 velocity((rand() % 100 - 50) * 0.001, (rand() % 50) * 0.002, (rand() % 100 - 50) * 0.001);
+            Particle particle(position, velocity);
+            particles.push_back(particle);
+            particleTimer = 0;
+        }
 
         for (int i = 0; i < particles.size(); i++) {
             vec3 gravityForce(0.0f, -0.01f, 0.0f);
             particles[i].applyForce(gravityForce);
 
-            for (int j = 0; j < particles.size(); j++) {
+            for (int j = i + 1; j < particles.size(); j++) {
                 if (i != j) {
                     float xDist = particles[j].position.x - particles[i].position.x;
                     float yDist = particles[j].position.y - particles[i].position.y;
                     float zDist = particles[j].position.z - particles[i].position.z;
                     float dist = sqrt(xDist * xDist + yDist * yDist + zDist * zDist);
                     if (dist < particles[j].radius + particles[i].radius) {
-                        vec3 bounceForce(-xDist * 0.02f / sqrt(dist), -yDist * 0.02f / sqrt(dist), -zDist * 0.02f / sqrt(dist));
+                        float bounceStrength = 0.01f / sqrt(dist);
+                        vec3 bounceForce(-xDist * bounceStrength, -yDist * bounceStrength, -zDist * bounceStrength);
                         particles[i].applyForce(bounceForce);
                         particles[j].applyForce(bounceForce * -1.0f);
                     }
@@ -183,8 +191,6 @@ int main() {
             particles[i].update(timeDelta);
         }
 
-        cubeModel.xform = Translate(0.0f, -10.0f, 0.0f);
-
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
@@ -192,13 +198,13 @@ int main() {
         glUseProgram(shaderProgram);
         SetUniform(shaderProgram, "cameraView", camera.fullview);
 
+        cubeModel.xform = Translate(0.0f, -10.0f, 0.0f);
         cubeModel.draw(shaderProgram);
 
         for (int i = 0; i < particles.size(); i++) {
             sphereModel.xform = Translate(particles[i].position);
             sphereModel.draw(shaderProgram);
         }
-
 
         glfwSwapBuffers(window);
         glfwPollEvents();

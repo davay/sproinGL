@@ -13,6 +13,14 @@ public:
     float radius;
     float damping;
 
+    Particle(vec3 position, vec3 velocity) {
+        this->position = position;
+        this->velocity = velocity;
+        mass = 1.0f;
+        radius = 1.0f;
+        damping = 0.9f;
+    }
+
     Particle(vec3 position, int seed) {
         srand(seed);
 
