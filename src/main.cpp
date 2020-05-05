@@ -43,7 +43,7 @@ const char *fragmentShaderSource = R"(
     out vec4 fragColor;
 
     void main() {
-        vec3 light = vec3(0.5f, 5.0f, 10.0f);
+        vec3 light = vec3(0.0f, 3.0f, 2.0f);
         vec3 N = normalize(vNormal);            // surface normal
         vec3 L = normalize(light - vPoint);     // light vector
         vec3 E = normalize(vPoint);             // eye vector
@@ -60,7 +60,7 @@ const char *fragmentShaderSource = R"(
 unsigned int SCR_WIDTH = 640;
 unsigned int SCR_HEIGHT = 400;
 
-Camera camera(SCR_WIDTH, SCR_HEIGHT, vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, -40.0f), 30);
+Camera camera(SCR_WIDTH, SCR_HEIGHT, vec3(20.0f, -5.0f, 0.0f), vec3(0.0f, -2.0f, -40.0f), 30);
 Model sphereModel;
 Model cubeModel;
 
@@ -136,54 +136,8 @@ int main() {
     glfwSetKeyCallback(window, Keyboard);
     glfwSetWindowSizeCallback(window, Resize);
 
-
     sphereModel.read("./assets/sphere.obj", "‎⁨.⁩/assets/lily.tga⁩");
-    //cubeModel.read("./assets/cube.obj", "‎⁨.⁩/assets/lily.tga⁩");
-
-
-    unsigned int vao, vbo, ebo;
-
-    std::vector<vec3> points = {
-        vec3(0.0f, 0.0f, 0.0f),
-        vec3(1.0f, 0.0f, 0.0f),
-        vec3(0.0f, 1.0f, 0.0f)
-    };
-
-    std::vector<vec3> normals = {
-        vec3(0.0f, 0.0f, 1.0f),
-        vec3(0.0f, 0.0f, 1.0f),
-        vec3(0.0f, 0.0f, 1.0f)
-    };
-
-    std::vector<vec3> triangles = {
-        vec3(0, 1, 2)
-    };
-
-    /*
-    int pointsSize = points.size() * sizeof(vec3);
-    int normalsSize = normals.size() * sizeof(vec3);
-    int bufferSize = pointsSize + normalsSize;
-
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    glGenBuffers(1, &ebo);
-
-    glBindVertexArray(vao);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, bufferSize, NULL, GL_STATIC_DRAW);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, bufferSize, &points[0]);
-    glBufferSubData(GL_ARRAY_BUFFER, pointsSize, normalsSize, &normals[0]);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(vec3) * triangles.size(), &triangles[0], GL_STATIC_DRAW);
-
-    glBindVertexArray(0);
-    */
-
-    //sphereModel.xform = Translate(particle.position);
-    //sphereModel.xform = Translate(-2.0f, 0.0f, 0.0f);
-    //cubeModel.xform = Translate(2.0f, 0.0f, 0.0f);
+    cubeModel.read("./assets/cube.obj", "‎⁨.⁩/assets/lily.tga⁩");
 
     double lastTime = glfwGetTime();
 
@@ -194,6 +148,7 @@ int main() {
 
         particle.update(timeDelta);
         sphereModel.xform = Translate(particle.position);
+        cubeModel.xform = Translate(0.0f, -10.0f, 0.0f);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -203,24 +158,7 @@ int main() {
         SetUniform(shaderProgram, "cameraView", camera.fullview);
 
         sphereModel.draw(shaderProgram);
-        //cubeModel.draw(shaderProgram);
-
-        /*
-        mat4 xform = Translate(0.0f, 0.0f, 0.0f);
-        SetUniform(shaderProgram, "modelTrans", xform);
-
-        glBindVertexArray(vao);
-
-        // Set vertex attributes
-        int pointsSize = points.size() * sizeof(vec3);
-        VertexAttribPointer(shaderProgram, "point", 3, 0, (void *) 0);
-        VertexAttribPointer(shaderProgram, "normal", 3, 0, (void *) pointsSize);
-
-        // Draw triangles
-        glDrawElements(GL_TRIANGLES, 3 * triangles.size(), GL_UNSIGNED_INT, 0);
-
-        glBindVertexArray(0);
-        */
+        cubeModel.draw(shaderProgram);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
