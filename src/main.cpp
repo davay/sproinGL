@@ -12,7 +12,10 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
+#include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 // Shaders
 const char *vertexShaderSource = R"(
@@ -43,7 +46,7 @@ const char *fragmentShaderSource = R"(
     out vec4 fragColor;
 
     void main() {
-        vec3 light = vec3(0.0f, 3.0f, 2.0f);
+        vec3 light = vec3(0.0f, 6.0f, 8.0f);
         vec3 N = normalize(vNormal);            // surface normal
         vec3 L = normalize(light - vPoint);     // light vector
         vec3 E = normalize(vPoint);             // eye vector
@@ -64,7 +67,7 @@ Camera camera(SCR_WIDTH, SCR_HEIGHT, vec3(20.0f, -5.0f, 0.0f), vec3(0.0f, -2.0f,
 Model sphereModel;
 Model cubeModel;
 
-Particle particle(vec3(0.0f, 5.0f, 0.0f));
+std::vector<Particle> particles;
 
 bool Shift(GLFWwindow *w) {
     return glfwGetKey(w, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
@@ -139,15 +142,47 @@ int main() {
     sphereModel.read("./assets/sphere.obj", "‎⁨.⁩/assets/lily.tga⁩");
     cubeModel.read("./assets/cube.obj", "‎⁨.⁩/assets/lily.tga⁩");
 
+    srand(time(NULL));
+    for (int i = 0; i < 100; i++) {
+        particles.push_back(Particle(vec3(rand() % 10 - 5, rand() % 10 - 5, rand() % 10 - 5), rand()));
+    }
+
     double lastTime = glfwGetTime();
 
     while (!glfwWindowShouldClose(window)) {
         double currentTime = glfwGetTime();
         double timeDelta = currentTime - lastTime;
+
+
+        if ((int) currentTime % 2 == 0 && (int) lastTime % 2 != 0) {
+            particles.push_back(Particle(vec3(0.0f, 5.0f, 0.0f), rand()));
+        }
+
         lastTime = currentTime;
 
-        particle.update(timeDelta);
-        sphereModel.xform = Translate(particle.position);
+        for (int i = 0; i < particles.size(); i++) {
+            vec3 gravityForce(0.0f, -0.01f, 0.0f);
+            particles[i].applyForce(gravityForce);
+
+            for (int j = 0; j < particles.size(); j++) {
+                if (i != j) {
+                    float xDist = particles[j].position.x - particles[i].position.x;
+                    float yDist = particles[j].position.y - particles[i].position.y;
+                    float zDist = particles[j].position.z - particles[i].position.z;
+                    float dist = sqrt(xDist * xDist + yDist * yDist + zDist * zDist);
+                    if (dist < particles[j].radius + particles[i].radius) {
+                        vec3 bounceForce(-xDist * 0.02f / sqrt(dist), -yDist * 0.02f / sqrt(dist), -zDist * 0.02f / sqrt(dist));
+                        particles[i].applyForce(bounceForce);
+                        particles[j].applyForce(bounceForce * -1.0f);
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < particles.size(); i++) {
+            particles[i].update(timeDelta);
+        }
+
         cubeModel.xform = Translate(0.0f, -10.0f, 0.0f);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -157,8 +192,13 @@ int main() {
         glUseProgram(shaderProgram);
         SetUniform(shaderProgram, "cameraView", camera.fullview);
 
-        sphereModel.draw(shaderProgram);
         cubeModel.draw(shaderProgram);
+
+        for (int i = 0; i < particles.size(); i++) {
+            sphereModel.xform = Translate(particles[i].position);
+            sphereModel.draw(shaderProgram);
+        }
+
 
         glfwSwapBuffers(window);
         glfwPollEvents();

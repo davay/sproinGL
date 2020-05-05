@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <stdio.h>
+#include <stdlib.h>
 
 class Particle {
 public:
@@ -12,11 +13,14 @@ public:
     float radius;
     float damping;
 
-    Particle(vec3 position) {
+    Particle(vec3 position, int seed) {
+        srand(seed);
+
         this->position = position;
-        velocity = vec3(0.1f, 0.3f, 0.4f);
+        velocity = vec3((rand() % 100 - 50) * 0.005, (rand() % 100 - 50) * 0.005, (rand() % 100 - 50) * 0.005);
+        mass = 1.0f;
         radius = 1.0f;
-        damping = 0.95f;
+        damping = 0.8f + (rand() % 20 / 100.0f);
     }
 
     void applyForce(vec3 force) {
@@ -24,7 +28,8 @@ public:
     }
 
     void update(double timeDelta) {
-        velocity += vec3(0.0f, -0.01f, 0.0f);
+        vec3 acceleration = netForce * (1.0f / mass);
+        velocity += acceleration;
         position += velocity;
 
         if (position.x - radius < -10.0f) {

@@ -46,8 +46,6 @@ public:
         glBufferSubData(GL_ARRAY_BUFFER, pointsSize, normalsSize, &normals[0]);
 
         // Set vertex attributes
-        //VertexAttribPointer(shaderProgram, "point", 3, 0, (void *) 0);
-        //VertexAttribPointer(shaderProgram, "normal", 3, 0, (void *) pointsSize);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
 
