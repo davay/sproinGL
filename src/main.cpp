@@ -159,7 +159,7 @@ int main() {
         lastTime = currentTime;
 
         particleTimer++;
-        if (particleTimer > 10) {
+        if (particleTimer > 10 && particles.size() < 100) {
             vec3 position(9.0f, 9.0f, -9.0f);
             vec3 velocity((rand() % 100 - 50) * 0.001, (rand() % 50) * 0.002, (rand() % 100 - 50) * 0.001);
             Particle particle(position, velocity);
