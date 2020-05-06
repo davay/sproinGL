@@ -3,7 +3,7 @@
 #ifndef WIDGETS_HDR
 #define WIDGETS_HDR
 
-#include <String.h>
+#include <cstring>
 #include "Quaternion.h"
 #include "VecMat.h"
 
