@@ -121,7 +121,7 @@ int main() {
 #endif
 
     // glfw window creation
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Vertex Attrib", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "SproinGL", NULL, NULL);
 
     glfwMakeContextCurrent(window);
     //glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -143,12 +143,6 @@ int main() {
     cubeModel.read("./assets/cube.obj", "‎⁨.⁩/assets/lily.tga⁩");
 
     srand(time(NULL));
-    for (int i = 0; i < 100; i++) {
-        vec3 position(rand() % 10 - 5, rand() % 10 - 5, rand() % 10 - 5);
-        vec3 velocity((rand() % 100 - 50) * 0.005, (rand() % 50) * 0.005, (rand() % 100 - 50) * 0.005);
-        Particle particle(position, velocity);
-        //particles.push_back(particle);
-    }
 
     double lastTime = glfwGetTime();
     double particleTimer = 0;
@@ -159,7 +153,7 @@ int main() {
         lastTime = currentTime;
 
         particleTimer++;
-        if (particleTimer > 10 && particles.size() < 100) {
+        if (particleTimer > 5 && particles.size() < 200) {
             vec3 position(9.0f, 9.0f, -9.0f);
             vec3 velocity((rand() % 100 - 50) * 0.001, (rand() % 50) * 0.002, (rand() % 100 - 50) * 0.001);
             Particle particle(position, velocity);
@@ -172,17 +166,15 @@ int main() {
             particles[i].applyForce(gravityForce);
 
             for (int j = i + 1; j < particles.size(); j++) {
-                if (i != j) {
-                    float xDist = particles[j].position.x - particles[i].position.x;
-                    float yDist = particles[j].position.y - particles[i].position.y;
-                    float zDist = particles[j].position.z - particles[i].position.z;
-                    float dist = sqrt(xDist * xDist + yDist * yDist + zDist * zDist);
-                    if (dist < particles[j].radius + particles[i].radius) {
-                        float bounceStrength = 0.01f / sqrt(dist);
-                        vec3 bounceForce(-xDist * bounceStrength, -yDist * bounceStrength, -zDist * bounceStrength);
-                        particles[i].applyForce(bounceForce);
-                        particles[j].applyForce(bounceForce * -1.0f);
-                    }
+                float xDist = particles[j].position.x - particles[i].position.x;
+                float yDist = particles[j].position.y - particles[i].position.y;
+                float zDist = particles[j].position.z - particles[i].position.z;
+                float dist = sqrt(xDist * xDist + yDist * yDist + zDist * zDist);
+                if (dist < particles[j].radius + particles[i].radius) {
+                    float bounceStrength = 0.01f / sqrt(dist);
+                    vec3 bounceForce(-xDist * bounceStrength, -yDist * bounceStrength, -zDist * bounceStrength);
+                    particles[i].applyForce(bounceForce);
+                    particles[j].applyForce(bounceForce * -1.0f);
                 }
             }
         }
