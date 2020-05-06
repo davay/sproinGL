@@ -1,7 +1,7 @@
 // Numbers.h
 
 #ifndef NUMBERS_HDR
-#define NUMBERTS_HDR
+#define NUMBERS_HDR
 
 #include "VecMat.h"
 
