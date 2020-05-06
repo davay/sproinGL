@@ -2,6 +2,7 @@
 
 #include <glad.h>    // gl
 #include "Draw.h"    // ScreenPoint
+#include <cstring>
 #include "GLXtras.h" // LinkProgramViaCode, VertexAttribPointer, SetUniform
 #include "Misc.h"    // LoadTexture
 #include "Numbers.h" // Number
