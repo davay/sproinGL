@@ -1,5 +1,6 @@
 #include "model.h"
 #include "particle.h"
+#include "spring.h"
 
 #include "Camera.h"
 #include "Draw.h"
@@ -60,12 +61,14 @@ const char *fragmentShaderSource = R"(
     }
 )";
 
-unsigned int SCR_WIDTH = 640;
-unsigned int SCR_HEIGHT = 400;
+const unsigned int SCREEN_WIDTH = 640;
+const unsigned int SCREEN_HEIGHT = 400;
 
-Camera camera(SCR_WIDTH, SCR_HEIGHT, vec3(20.0f, -5.0f, 0.0f), vec3(0.0f, -2.0f, -40.0f), 30);
+Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT, vec3(20.0f, -5.0f, 0.0f), vec3(0.0f, -2.0f, -40.0f), 30);
+
 Model sphereModel;
 Model cubeModel;
+Model cylinderModel;
 
 std::vector<Particle> particles;
 
@@ -121,7 +124,7 @@ int main() {
 #endif
 
     // glfw window creation
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "SproinGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "SproinGL", NULL, NULL);
 
     glfwMakeContextCurrent(window);
     //glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -141,6 +144,12 @@ int main() {
 
     sphereModel.read("./assets/sphere.obj", "‎⁨.⁩/assets/lily.tga⁩");
     cubeModel.read("./assets/cube.obj", "‎⁨.⁩/assets/lily.tga⁩");
+    cylinderModel.read("./assets/cylinder.obj", "‎⁨.⁩/assets/lily.tga⁩");
+
+    particles.push_back(Particle(vec3(3.0f, 7.0f, -4.0f), vec3(0.0f, 0.0f, 0.0f)));
+    particles.push_back(Particle(vec3(3.0f, 3.0f, -4.0f), vec3(0.0f, 0.0f, 0.0f)));
+
+    Spring spring(&particles[0], &particles[1], 4.0f, 0.02f, 0.05f);
 
     srand(time(NULL));
 
@@ -152,10 +161,10 @@ int main() {
         double timeDelta = currentTime - lastTime;
         lastTime = currentTime;
 
-        particleTimer++;
-        if (particleTimer > 5 && particles.size() < 200) {
+        //particleTimer++;
+        if (particleTimer > 300 && particles.size() < 3) {
             vec3 position(9.0f, 9.0f, -9.0f);
-            vec3 velocity((rand() % 100 - 50) * 0.001, (rand() % 50) * 0.002, (rand() % 100 - 50) * 0.001);
+            vec3 velocity(0, 0, 0);
             Particle particle(position, velocity);
             particles.push_back(particle);
             particleTimer = 0;
@@ -171,13 +180,15 @@ int main() {
                 float zDist = particles[j].position.z - particles[i].position.z;
                 float dist = sqrt(xDist * xDist + yDist * yDist + zDist * zDist);
                 if (dist < particles[j].radius + particles[i].radius) {
-                    float bounceStrength = 0.01f / sqrt(dist);
+                    float bounceStrength = 0.03f / sqrt(dist);
                     vec3 bounceForce(-xDist * bounceStrength, -yDist * bounceStrength, -zDist * bounceStrength);
-                    particles[i].applyForce(bounceForce);
-                    particles[j].applyForce(bounceForce * -1.0f);
+                    //particles[i].applyForce(bounceForce);
+                    //particles[j].applyForce(bounceForce * -1.0f);
                 }
             }
         }
+
+        spring.applyForce();
 
         for (int i = 0; i < particles.size(); i++) {
             particles[i].update(timeDelta);
@@ -190,13 +201,19 @@ int main() {
         glUseProgram(shaderProgram);
         SetUniform(shaderProgram, "cameraView", camera.fullview);
 
-        cubeModel.xform = Translate(0.0f, -10.0f, 0.0f);
+        // Draw arena
+        cubeModel.setXform(Translate(0.0f, -10.0f, 0.0f));
         cubeModel.draw(shaderProgram);
 
+        // Draw particles
         for (int i = 0; i < particles.size(); i++) {
-            sphereModel.xform = Translate(particles[i].position);
+            sphereModel.setXform(Translate(particles[i].getPosition()));
             sphereModel.draw(shaderProgram);
         }
+
+        // Draw springs
+        cylinderModel.setXform(Translate(0.0f, 5.0f, 0.0f));
+        cylinderModel.draw(shaderProgram);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

@@ -1,3 +1,6 @@
+#ifndef PARTICLE_H
+#define PARTICLE_H
+
 #include "VecMat.h"
 
 #include <iostream>
@@ -18,7 +21,7 @@ public:
         this->velocity = velocity;
         mass = 1.0f;
         radius = 1.0f;
-        damping = 0.9f;
+        damping = 0.99f;
     }
 
     Particle(vec3 position, int seed) {
@@ -65,4 +68,13 @@ public:
 
         netForce.x = netForce.y = netForce.z = 0.0f;
     }
+
+    vec3 getPosition() { return position; }
+    vec3 getVelocity() { return velocity; }
+    float getRadius() { return radius; }
+
+private:
+
 };
+
+#endif

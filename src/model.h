@@ -7,13 +7,6 @@
 
 class Model {
 public:
-    vector<vec3> points;
-    vector<vec3> normals;
-    vector<vec2> uvs;
-    vector<int3> triangles;
-    mat4 xform;
-    unsigned int vbo, vao, ebo;
-
     Model() { };
 
     bool read(const char *meshName, const char *textureName) {
@@ -74,4 +67,15 @@ public:
 
         glBindVertexArray(0);
     }
+
+    void setXform(mat4 xform) { this->xform = xform; }
+
+private:
+    vector<vec3> points;
+    vector<vec3> normals;
+    vector<vec2> uvs;
+    vector<int3> triangles;
+    mat4 xform;
+    vec3 color;
+    unsigned int vbo, vao, ebo;
 };
