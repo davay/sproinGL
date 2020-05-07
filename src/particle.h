@@ -9,19 +9,12 @@
 
 class Particle {
 public:
-    vec3 position;
-    vec3 velocity;
-    vec3 netForce;
-    float mass;
-    float radius;
-    float damping;
-
     Particle(vec3 position, vec3 velocity) {
         this->position = position;
         this->velocity = velocity;
         mass = 1.0f;
         radius = 1.0f;
-        damping = 0.95f;
+        damping = 0.9f;
     }
 
     Particle(vec3 position, int seed) {
@@ -43,6 +36,7 @@ public:
         velocity += acceleration;
         position += velocity;
 
+        /*
         if (position.x - radius < -10.0f) {
             position.x = -10.0f + radius;
             velocity.x *= -damping;
@@ -51,12 +45,16 @@ public:
             position.x = 10.0f - radius;
             velocity.x *= -damping;
         }
+        */
+
         if (position.y - radius < 0.0f) {
             position.y = 0.0 + radius;
             velocity.x *= damping;
             velocity.y *= -damping;
             velocity.z *= damping;
         }
+
+        /*
         if (position.z -radius < -10.0f) {
             position.z = -10.0f + radius;
             velocity.z *= -damping;
@@ -65,6 +63,7 @@ public:
             position.z = 10.0f - radius;
             velocity.z *= -damping;
         }
+        */
 
         netForce.x = netForce.y = netForce.z = 0.0f;
     }
@@ -74,7 +73,12 @@ public:
     float getRadius() { return radius; }
 
 private:
-
+    vec3 position;
+    vec3 velocity;
+    vec3 netForce;
+    float mass;
+    float radius;
+    float damping;
 };
 
 #endif

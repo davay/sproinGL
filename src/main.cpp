@@ -138,7 +138,7 @@ int main() {
     glfwSetCursorPosCallback(window, MouseMove);
     glfwSetMouseButtonCallback(window, MouseButton);
     glfwSetScrollCallback(window, MouseWheel);
-    glfwSetKeyCallback(window, Keyboard);
+    //glfwSetKeyCallback(window, Keyboard);
     glfwSetWindowSizeCallback(window, Resize);
 
     // Load models
@@ -150,7 +150,7 @@ int main() {
     cylinderModel.read("./assets/cylinder.obj", "‎⁨.⁩/assets/lily.tga⁩");
 
     // Initialize game objects
-    PhysicsManager pm();
+    PhysicsManager pm;
     std::vector<Particle*> particles;
     std::vector<Spring*> springs;
 
@@ -161,13 +161,16 @@ int main() {
     springs.push_back(new Spring(particles[0], particles[1], 4.0f, 0.04f, 0.01f));
     */
 
-    for (int i = 0; i < 4; i++) {
-        particles.push_back(new Particle(vec3(i * 2, 9.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f)));
+    for (int i = 0; i < 6; i++) {
+        particles.push_back(new Particle(vec3(i * 3, 10.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f)));
     }
 
-    for (int i = 0; i < 3; i++) {
-        springs.push_back(new Spring(particles[i], particles[i + 1], 2, 0.05, 0.01));
+    for (int i = 0; i < 5; i++) {
+        springs.push_back(new Spring(particles[i], particles[i + 1], 3, 0.1, 0.05));
     }
+
+    Particle *player = new Particle(vec3(0, 0, 0), vec3(0, 0, 0));
+    particles.push_back(player);
 
     srand(time(NULL));
     double lastTime = glfwGetTime();
@@ -178,7 +181,7 @@ int main() {
         double timeDelta = currentTime - lastTime;
         lastTime = currentTime;
 
-        particleTimer++;
+        //particleTimer++;
         if (particleTimer > 120 && particles.size() < 10) {
             vec3 p1Position(rand() % 20 - 10, rand() % 10, rand() % 20 - 10);
             vec3 p2Position = p1Position + vec3(0.0f, 1.0f, 0.0f);
@@ -196,6 +199,29 @@ int main() {
             springs.push_back(s);
 
             particleTimer = 0;
+        }
+
+        // Player particle movement
+        float moveSpeed = 0.025f;
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+            mat4 cameraAngle = camera.GetRotate();
+            vec4 dir = cameraAngle * vec4(0, 0, moveSpeed, 1);
+            player->applyForce(vec3(dir.x, 0, -dir.z));
+        }
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+            mat4 cameraAngle = camera.GetRotate();
+            vec4 dir = cameraAngle * vec4(0, 0, -moveSpeed, 1);
+            player->applyForce(vec3(dir.x, 0, -dir.z));
+        }
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+            mat4 cameraAngle = camera.GetRotate();
+            vec4 dir = cameraAngle * vec4(-moveSpeed, 0, 0, 1);
+            player->applyForce(vec3(dir.x, 0, -dir.z));
+        }
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+            mat4 cameraAngle = camera.GetRotate();
+            vec4 dir = cameraAngle * vec4(moveSpeed, 0, 0, 1);
+            player->applyForce(vec3(dir.x, 0, -dir.z));
         }
 
         // Collide particles with each other
@@ -226,6 +252,7 @@ int main() {
                 particles[i]->update(timeDelta);
         }
 
+        // Clear screen
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
@@ -245,7 +272,6 @@ int main() {
 
         // Draw springs
         for (int i = 0; i < springs.size(); i++) {
-            //mat4 xform = LookAt(vec3(0, 0, 0), vec3(0, 3, 0), vec3(0, 1, 0));
             cylinderModel.setXform(springs[i]->getXform());
             cylinderModel.draw(shaderProgram);
         }

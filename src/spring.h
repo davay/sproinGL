@@ -58,10 +58,9 @@ public:
         vec3 p1Position = p1->getPosition();
         vec3 p2Position = p2->getPosition();
         vec3 middle = (p1Position + p2Position) / 2.0f;
-
         vec3 positionDelta = p2Position - p1Position;
-
-        return Translate(middle) * Scale(0.25, length(positionDelta) - 2, 0.25);
+        //return Translate(middle) * Scale(0.5, length(positionDelta), 0.5);
+        return LookAt(middle, p2Position, vec3(0, 1, 0)) * Scale(0.5, length(positionDelta), 0.5);
     }
 
 private:

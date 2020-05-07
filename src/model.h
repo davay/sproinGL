@@ -1,3 +1,6 @@
+#ifndef MODEL_H
+#define MODEL_H
+
 #include "GLXtras.h"
 #include "Mesh.h"
 #include "VecMat.h"
@@ -78,7 +81,9 @@ private:
     vector<vec3> normals;
     vector<vec2> uvs;
     vector<int3> triangles;
+    unsigned int vbo, vao, ebo;
     mat4 xform;
     vec3 color;
-    unsigned int vbo, vao, ebo;
 };
+
+#endif
