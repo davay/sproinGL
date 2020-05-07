@@ -154,10 +154,20 @@ int main() {
     std::vector<Particle*> particles;
     std::vector<Spring*> springs;
 
+    /*
     particles.push_back(new Particle(vec3(3.0f, 6.0f, -4.0f), vec3(0.0f, 0.0f, 0.0f)));
     particles.push_back(new Particle(vec3(3.0f, 2.0f, -4.0f), vec3(0.0f, 0.0f, 0.0f)));
 
     springs.push_back(new Spring(particles[0], particles[1], 4.0f, 0.04f, 0.01f));
+    */
+
+    for (int i = 0; i < 4; i++) {
+        particles.push_back(new Particle(vec3(i * 2, 9.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f)));
+    }
+
+    for (int i = 0; i < 3; i++) {
+        springs.push_back(new Spring(particles[i], particles[i + 1], 2, 0.05, 0.01));
+    }
 
     srand(time(NULL));
     double lastTime = glfwGetTime();
@@ -169,8 +179,22 @@ int main() {
         lastTime = currentTime;
 
         particleTimer++;
-        if (particleTimer > 120 && particles.size() < 20) {
-            particles.push_back(new Particle(vec3(9.0f, 9.0f, -9.0f), vec3((rand() % 100 - 50) * 0.005, (rand() % 100 - 50) * 0.005, (rand() % 100 - 50) * 0.005)));
+        if (particleTimer > 120 && particles.size() < 10) {
+            vec3 p1Position(rand() % 20 - 10, rand() % 10, rand() % 20 - 10);
+            vec3 p2Position = p1Position + vec3(0.0f, 1.0f, 0.0f);
+
+            vec3 p1Velocity((rand() % 100 - 50) * 0.005, (rand() % 100 - 50) * 0.005, (rand() % 100 - 50) * 0.005);
+            vec3 p2Velocity((rand() % 100 - 50) * 0.005, (rand() % 100 - 50) * 0.005, (rand() % 100 - 50) * 0.005);
+
+            Particle *p1 = new Particle(p1Position, p1Velocity);
+            Particle *p2 = new Particle(p2Position, p2Velocity);
+
+            particles.push_back(p1);
+            particles.push_back(p2);
+
+            Spring *s = new Spring(p1, p2, rand() % 2 + 3, 0.04f, 0.01f);
+            springs.push_back(s);
+
             particleTimer = 0;
         }
 
@@ -198,7 +222,8 @@ int main() {
         for (int i = 0; i < particles.size(); i++) {
             vec3 gravityForce(0.0f, -0.01f, 0.0f);
             particles[i]->applyForce(gravityForce);
-            particles[i]->update(timeDelta);
+            if (i > 0)
+                particles[i]->update(timeDelta);
         }
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
