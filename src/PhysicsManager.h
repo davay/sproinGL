@@ -14,6 +14,10 @@ public:
         particles.push_back(particle);
     }
 
+    std::vector<Particle*> *getParticles() {
+        return &particles;
+    }
+
 private:
     std::vector<Particle*> particles;
 };

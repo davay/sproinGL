@@ -7,7 +7,9 @@
 
 class Model {
 public:
-    Model() { };
+    Model(vec3 color) {
+        this->color = color;
+    };
 
     bool read(const char *meshName, const char *textureName) {
         if (!ReadAsciiObj(meshName, points, triangles, &normals, &uvs)) {
@@ -61,6 +63,7 @@ public:
 
         // Use the model's model-to-world transform
         SetUniform(shaderProgram, "modelTrans", xform);
+        SetUniform(shaderProgram, "modelColor", color);
 
         // Draw triangles
         glDrawElements(GL_TRIANGLES, 3 * triangles.size(), GL_UNSIGNED_INT, 0);

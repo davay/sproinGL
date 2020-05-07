@@ -28,13 +28,16 @@ const char *vertexShaderSource = R"(
 
     out vec3 vPoint;
     out vec3 vNormal;
+    out vec3 vColor;
 
     uniform mat4 modelTrans;
+    uniform vec3 modelColor;
     uniform mat4 cameraView;
 
     void main() {
         vPoint = (modelTrans * vec4(point, 1)).xyz;
         vNormal = (modelTrans * vec4(normal, 0)).xyz;
+        vColor = modelColor;
         gl_Position = cameraView * modelTrans * vec4(point, 1.0);
     }
 )";
@@ -44,6 +47,7 @@ const char *fragmentShaderSource = R"(
 
     in vec3 vPoint;
     in vec3 vNormal;
+    in vec3 vColor;
 
     out vec4 fragColor;
 
@@ -57,7 +61,7 @@ const char *fragmentShaderSource = R"(
         float s = dot(R, E);                    //  specular
         //float intensity = clamp(d + pow(s, 50.0f), 0.0f, 1.0f);
         float intensity = clamp(d, 0.05f, 1.0f);
-        vec3 rgb = vec3(1.0f, 0.5f, 0.2f) * intensity;
+        vec3 rgb = vColor * intensity;
         fragColor = vec4(rgb, 1.0f);
     }
 )";
@@ -138,7 +142,9 @@ int main() {
     glfwSetWindowSizeCallback(window, Resize);
 
     // Load models
-    Model sphereModel, cubeModel, cylinderModel;
+    Model sphereModel(vec3(1.0f, 0.5f, 0.2f));
+    Model cubeModel(vec3(1.0f, 0.3f, 0.4f));
+    Model cylinderModel(vec3(1.0f, 1.0f, 1.0f));
     sphereModel.read("./assets/sphere.obj", "‎⁨.⁩/assets/lily.tga⁩");
     cubeModel.read("./assets/cube.obj", "‎⁨.⁩/assets/lily.tga⁩");
     cylinderModel.read("./assets/cylinder.obj", "‎⁨.⁩/assets/lily.tga⁩");
@@ -148,8 +154,8 @@ int main() {
     std::vector<Particle*> particles;
     std::vector<Spring*> springs;
 
-    particles.push_back(new Particle(vec3(3.0f, 12.0f, -4.0f), vec3(0.0f, 0.0f, 0.0f)));
-    particles.push_back(new Particle(vec3(3.0f, 8.0f, -4.0f), vec3(0.0f, 0.0f, 0.0f)));
+    particles.push_back(new Particle(vec3(3.0f, 6.0f, -4.0f), vec3(0.0f, 0.0f, 0.0f)));
+    particles.push_back(new Particle(vec3(3.0f, 2.0f, -4.0f), vec3(0.0f, 0.0f, 0.0f)));
 
     springs.push_back(new Spring(particles[0], particles[1], 4.0f, 0.04f, 0.01f));
 
@@ -213,8 +219,11 @@ int main() {
         }
 
         // Draw springs
-        cylinderModel.setXform(Translate(0.0f, 5.0f, 0.0f));
-        cylinderModel.draw(shaderProgram);
+        for (int i = 0; i < springs.size(); i++) {
+            //mat4 xform = LookAt(vec3(0, 0, 0), vec3(0, 3, 0), vec3(0, 1, 0));
+            cylinderModel.setXform(springs[i]->getXform());
+            cylinderModel.draw(shaderProgram);
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();

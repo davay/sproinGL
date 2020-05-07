@@ -54,6 +54,16 @@ public:
         p2->applyForce(p2Force);
     }
 
+    mat4 getXform() {
+        vec3 p1Position = p1->getPosition();
+        vec3 p2Position = p2->getPosition();
+        vec3 middle = (p1Position + p2Position) / 2.0f;
+
+        vec3 positionDelta = p2Position - p1Position;
+
+        return Translate(middle) * Scale(0.25, length(positionDelta) - 2, 0.25);
+    }
+
 private:
     Particle *p1, *p2;
     float stiffness, damping;
