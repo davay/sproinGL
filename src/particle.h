@@ -21,7 +21,7 @@ public:
         this->velocity = velocity;
         mass = 1.0f;
         radius = 1.0f;
-        damping = 0.99f;
+        damping = 0.95f;
     }
 
     Particle(vec3 position, int seed) {

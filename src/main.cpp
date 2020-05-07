@@ -1,6 +1,7 @@
 #include "model.h"
-#include "particle.h"
-#include "spring.h"
+#include "Particle.h"
+#include "Spring.h"
+#include "PhysicsManager.h"
 
 #include "Camera.h"
 #include "Draw.h"
@@ -65,12 +66,6 @@ const unsigned int SCREEN_WIDTH = 640;
 const unsigned int SCREEN_HEIGHT = 400;
 
 Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT, vec3(20.0f, -5.0f, 0.0f), vec3(0.0f, -2.0f, -40.0f), 30);
-
-Model sphereModel;
-Model cubeModel;
-Model cylinderModel;
-
-std::vector<Particle> particles;
 
 bool Shift(GLFWwindow *w) {
     return glfwGetKey(w, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
@@ -142,17 +137,23 @@ int main() {
     glfwSetKeyCallback(window, Keyboard);
     glfwSetWindowSizeCallback(window, Resize);
 
+    // Load models
+    Model sphereModel, cubeModel, cylinderModel;
     sphereModel.read("./assets/sphere.obj", "‎⁨.⁩/assets/lily.tga⁩");
     cubeModel.read("./assets/cube.obj", "‎⁨.⁩/assets/lily.tga⁩");
     cylinderModel.read("./assets/cylinder.obj", "‎⁨.⁩/assets/lily.tga⁩");
 
-    particles.push_back(Particle(vec3(3.0f, 7.0f, -4.0f), vec3(0.0f, 0.0f, 0.0f)));
-    particles.push_back(Particle(vec3(3.0f, 3.0f, -4.0f), vec3(0.0f, 0.0f, 0.0f)));
+    // Initialize game objects
+    PhysicsManager pm();
+    std::vector<Particle*> particles;
+    std::vector<Spring*> springs;
 
-    Spring spring(&particles[0], &particles[1], 4.0f, 0.02f, 0.05f);
+    particles.push_back(new Particle(vec3(3.0f, 12.0f, -4.0f), vec3(0.0f, 0.0f, 0.0f)));
+    particles.push_back(new Particle(vec3(3.0f, 8.0f, -4.0f), vec3(0.0f, 0.0f, 0.0f)));
+
+    springs.push_back(new Spring(particles[0], particles[1], 4.0f, 0.04f, 0.01f));
 
     srand(time(NULL));
-
     double lastTime = glfwGetTime();
     double particleTimer = 0;
 
@@ -161,37 +162,37 @@ int main() {
         double timeDelta = currentTime - lastTime;
         lastTime = currentTime;
 
-        //particleTimer++;
-        if (particleTimer > 300 && particles.size() < 3) {
-            vec3 position(9.0f, 9.0f, -9.0f);
-            vec3 velocity(0, 0, 0);
-            Particle particle(position, velocity);
-            particles.push_back(particle);
+        particleTimer++;
+        if (particleTimer > 120 && particles.size() < 20) {
+            particles.push_back(new Particle(vec3(9.0f, 9.0f, -9.0f), vec3((rand() % 100 - 50) * 0.005, (rand() % 100 - 50) * 0.005, (rand() % 100 - 50) * 0.005)));
             particleTimer = 0;
         }
 
+        // Collide particles with each other
         for (int i = 0; i < particles.size(); i++) {
-            vec3 gravityForce(0.0f, -0.01f, 0.0f);
-            particles[i].applyForce(gravityForce);
-
+            Particle *p1 = particles[i];
             for (int j = i + 1; j < particles.size(); j++) {
-                float xDist = particles[j].position.x - particles[i].position.x;
-                float yDist = particles[j].position.y - particles[i].position.y;
-                float zDist = particles[j].position.z - particles[i].position.z;
-                float dist = sqrt(xDist * xDist + yDist * yDist + zDist * zDist);
-                if (dist < particles[j].radius + particles[i].radius) {
-                    float bounceStrength = 0.03f / sqrt(dist);
-                    vec3 bounceForce(-xDist * bounceStrength, -yDist * bounceStrength, -zDist * bounceStrength);
-                    //particles[i].applyForce(bounceForce);
-                    //particles[j].applyForce(bounceForce * -1.0f);
+                Particle *p2 = particles[j];
+                vec3 delta = p2->getPosition() - p1->getPosition();
+                if (length(delta) < p1->getRadius() + p2->getRadius()) {
+                    float bounceStrength = 0.03f / sqrt(length(delta));
+                    vec3 bounceForce = -delta * bounceStrength;
+                    p1->applyForce(bounceForce);
+                    p2->applyForce(bounceForce * -1.0f);
                 }
             }
         }
 
-        spring.applyForce();
+        // Apply spring forces to particles
+        for (int i = 0; i < springs.size(); i++) {
+            springs[i]->applyForce();
+        }
 
+        // Apply gravity force to particles and move them
         for (int i = 0; i < particles.size(); i++) {
-            particles[i].update(timeDelta);
+            vec3 gravityForce(0.0f, -0.01f, 0.0f);
+            particles[i]->applyForce(gravityForce);
+            particles[i]->update(timeDelta);
         }
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -201,13 +202,13 @@ int main() {
         glUseProgram(shaderProgram);
         SetUniform(shaderProgram, "cameraView", camera.fullview);
 
-        // Draw arena
+        // Draw cube arena
         cubeModel.setXform(Translate(0.0f, -10.0f, 0.0f));
         cubeModel.draw(shaderProgram);
 
         // Draw particles
         for (int i = 0; i < particles.size(); i++) {
-            sphereModel.setXform(Translate(particles[i].getPosition()));
+            sphereModel.setXform(Translate(particles[i]->getPosition()));
             sphereModel.draw(shaderProgram);
         }
 

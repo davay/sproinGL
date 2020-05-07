@@ -1,7 +1,7 @@
 #ifndef SPRING_H
 #define SPRING_H
 
-#include "particle.h"
+#include "Particle.h"
 
 #include "VecMat.h"
 
