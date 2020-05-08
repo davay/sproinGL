@@ -154,22 +154,54 @@ int main() {
     std::vector<Particle*> particles;
     std::vector<Spring*> springs;
 
-    /*
-    particles.push_back(new Particle(vec3(3.0f, 6.0f, -4.0f), vec3(0.0f, 0.0f, 0.0f)));
-    particles.push_back(new Particle(vec3(3.0f, 2.0f, -4.0f), vec3(0.0f, 0.0f, 0.0f)));
-
-    springs.push_back(new Spring(particles[0], particles[1], 4.0f, 0.04f, 0.01f));
-    */
-
-    for (int i = 0; i < 4; i++) {
-        particles.push_back(new Particle(vec3(i * 3, 9.0f, 0), vec3(0.0f, 0.0f, 0.0f)));
+    for (int i = 0; i < 10; i++) {
+        vec3 position(i * 2.2, 9.0f, -3);
+        vec3 velocity(0.0f, 0.0f, 0.0f);
+        particles.push_back(new Particle(position, velocity, 1.0f, 0.1f, 0.9f));
     }
 
-    for (int i = 0; i < 3; i++) {
-        springs.push_back(new Spring(particles[i], particles[i + 1], 3, 0.1, 0.05));
+    for (int i = 0; i < 9; i++) {
+        springs.push_back(new Spring(particles[i], particles[i + 1], 2.2, 0.1, 0.01));
     }
 
-    Particle *player = new Particle(vec3(0, 0, 0), vec3(0, 0, 0), 1.0f, 1.0f, 0.9f);
+    Particle *head =    new Particle(vec3(0, 8, 0), vec3(0, 0, 0), 1.0f, 1.0f, 0.9f);
+    Particle *collar =  new Particle(vec3(0, 6.5, 0), vec3(0, 0, 0), 1.0f, 0.1f, 0.9f);
+    Particle *elbow1 =  new Particle(vec3(-2, 6.5, 0), vec3(0, 0, 0), 2.0f, 0.1f, 0.9f);
+    Particle *elbow2 =  new Particle(vec3(2, 6.5, 0), vec3(0, 0, 0), 2.0f, 0.1f, 0.9f);
+    Particle *hand1 =   new Particle(vec3(-4, 6.5, 0), vec3(0, 0, 0), 1.0f, 0.5f, 0.9f);
+    Particle *hand2 =   new Particle(vec3(4, 6.9, 0), vec3(0, 0, 0), 1.0f, 0.5f, 0.9f);
+    Particle *hips =    new Particle(vec3(0, 4, 0), vec3(0, 0, 0), 1.0f, 0.1f, 0.9f);
+    Particle *knee1 =   new Particle(vec3(-2, 4, 0), vec3(0, 0, 0), 1.0f, 0.1f, 0.9f);
+    Particle *knee2 =   new Particle(vec3(2, 4, 0), vec3(0, 0, 0), 1.0f, 0.1f, 0.9f);
+    Particle *foot1 =   new Particle(vec3(-4, 4, 0), vec3(0, 0, 0), 1.0f, 0.5f, 0.9f);
+    Particle *foot2 =   new Particle(vec3(4, 4, 0), vec3(0, 0, 0), 1.0f, 0.5f, 0.9f);
+
+    particles.push_back(head);
+    particles.push_back(collar);
+    particles.push_back(elbow1);
+    particles.push_back(elbow2);
+    particles.push_back(hand1);
+    particles.push_back(hand2);
+    particles.push_back(hips);
+    particles.push_back(knee1);
+    particles.push_back(knee2);
+    particles.push_back(foot1);
+    particles.push_back(foot2);
+
+    springs.push_back(new Spring(head, collar, 1.5, 0.1, 0.05));
+    springs.push_back(new Spring(collar, elbow1, 1.5, 0.1, 0.05));
+    springs.push_back(new Spring(collar, elbow2, 1.5, 0.1, 0.05));
+    springs.push_back(new Spring(elbow1, hand1, 1.5, 0.1, 0.05));
+    springs.push_back(new Spring(elbow2, hand2, 1.5, 0.1, 0.05));
+    springs.push_back(new Spring(collar, hips, 2.5, 0.1, 0.05));
+    springs.push_back(new Spring(hips, knee1, 2, 0.1, 0.05));
+    springs.push_back(new Spring(hips, knee2, 2, 0.1, 0.05));
+    springs.push_back(new Spring(knee1, foot1, 2, 0.1, 0.05));
+    springs.push_back(new Spring(knee2, foot2, 2, 0.1, 0.05));
+
+
+
+    Particle *player = new Particle(vec3(-5, 5, -5), vec3(0, 0, 0), 1.0f, 3.0f, 0.6f);
     particles.push_back(player);
 
     srand(time(NULL));
@@ -181,28 +213,8 @@ int main() {
         double timeDelta = currentTime - lastTime;
         lastTime = currentTime;
 
-        //particleTimer++;
-        if (particleTimer > 120 && particles.size() < 10) {
-            vec3 p1Position(rand() % 20 - 10, rand() % 10, rand() % 20 - 10);
-            vec3 p2Position = p1Position + vec3(0.0f, 1.0f, 0.0f);
-
-            vec3 p1Velocity((rand() % 100 - 50) * 0.005, (rand() % 100 - 50) * 0.005, (rand() % 100 - 50) * 0.005);
-            vec3 p2Velocity((rand() % 100 - 50) * 0.005, (rand() % 100 - 50) * 0.005, (rand() % 100 - 50) * 0.005);
-
-            Particle *p1 = new Particle(p1Position, p1Velocity);
-            Particle *p2 = new Particle(p2Position, p2Velocity);
-
-            particles.push_back(p1);
-            particles.push_back(p2);
-
-            Spring *s = new Spring(p1, p2, rand() % 2 + 3, 0.04f, 0.01f);
-            springs.push_back(s);
-
-            particleTimer = 0;
-        }
-
         // Player particle movement
-        float moveSpeed = 0.05f;
+        float moveSpeed = 0.02f;
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
             mat4 cameraAngle = camera.GetRotate();
             vec4 dir = cameraAngle * vec4(0, 0, moveSpeed, 1);
@@ -224,7 +236,7 @@ int main() {
             player->applyForce(vec3(dir.x, 0, -dir.z));
         }
         if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-            player->applyForce(vec3(0, 0.1, 0));
+            player->applyForce(vec3(0, 0.02, 0));
         }
 
         // Collide particles with each other
@@ -251,7 +263,7 @@ int main() {
         for (int i = 0; i < particles.size(); i++) {
             vec3 gravityForce(0.0f, -0.01f, 0.0f);
             particles[i]->applyForce(gravityForce);
-            if (i > 0)
+            if (i != 0 && i != 5)
                 particles[i]->update(timeDelta);
         }
 
@@ -269,7 +281,8 @@ int main() {
 
         // Draw particles
         for (int i = 0; i < particles.size(); i++) {
-            sphereModel.setXform(Translate(particles[i]->getPosition()));
+            sphereModel.setXform(particles[i]->getXform());
+            //sphereModel.setXform(Translate(particles[i]->getPosition()));
             sphereModel.draw(shaderProgram);
         }
 

@@ -25,6 +25,14 @@ public:
         damping = 0.9f;
     }
 
+    Particle(vec3 position) {
+        this->position = position;
+        velocity = vec3(0, 0, 0);
+        mass = 1.0f;
+        radius = 1.0f;
+        damping = 0.9f;
+    }
+
     void applyForce(vec3 force) {
         netForce += force;
     }
@@ -34,6 +42,7 @@ public:
         velocity += acceleration;
         position += velocity;
 
+        /*
         if (position.x - radius < -10.0f) {
             position.x = -10.0f + radius;
             velocity.x *= -damping;
@@ -42,12 +51,14 @@ public:
             position.x = 10.0f - radius;
             velocity.x *= -damping;
         }
+        */
         if (position.y - radius < 0.0f) {
             position.y = 0.0 + radius;
             velocity.x *= damping;
             velocity.y *= -damping;
             velocity.z *= damping;
         }
+        /*
         if (position.z -radius < -10.0f) {
             position.z = -10.0f + radius;
             velocity.z *= -damping;
@@ -56,8 +67,13 @@ public:
             position.z = 10.0f - radius;
             velocity.z *= -damping;
         }
+        */
 
         netForce.x = netForce.y = netForce.z = 0.0f;
+    }
+
+    mat4 getXform() {
+        return Translate(position) * Scale(radius, radius, radius);
     }
 
     vec3 getPosition() { return position; }
