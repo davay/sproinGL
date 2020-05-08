@@ -161,15 +161,15 @@ int main() {
     springs.push_back(new Spring(particles[0], particles[1], 4.0f, 0.04f, 0.01f));
     */
 
-    for (int i = 0; i < 6; i++) {
-        particles.push_back(new Particle(vec3(i * 3, 10.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f)));
+    for (int i = 0; i < 4; i++) {
+        particles.push_back(new Particle(vec3(i * 3, 9.0f, 0), vec3(0.0f, 0.0f, 0.0f)));
     }
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 3; i++) {
         springs.push_back(new Spring(particles[i], particles[i + 1], 3, 0.1, 0.05));
     }
 
-    Particle *player = new Particle(vec3(0, 0, 0), vec3(0, 0, 0));
+    Particle *player = new Particle(vec3(0, 0, 0), vec3(0, 0, 0), 1.0f, 1.0f, 0.9f);
     particles.push_back(player);
 
     srand(time(NULL));
@@ -202,7 +202,7 @@ int main() {
         }
 
         // Player particle movement
-        float moveSpeed = 0.025f;
+        float moveSpeed = 0.05f;
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
             mat4 cameraAngle = camera.GetRotate();
             vec4 dir = cameraAngle * vec4(0, 0, moveSpeed, 1);
@@ -223,6 +223,9 @@ int main() {
             vec4 dir = cameraAngle * vec4(moveSpeed, 0, 0, 1);
             player->applyForce(vec3(dir.x, 0, -dir.z));
         }
+        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+            player->applyForce(vec3(0, 0.1, 0));
+        }
 
         // Collide particles with each other
         for (int i = 0; i < particles.size(); i++) {
@@ -231,7 +234,7 @@ int main() {
                 Particle *p2 = particles[j];
                 vec3 delta = p2->getPosition() - p1->getPosition();
                 if (length(delta) < p1->getRadius() + p2->getRadius()) {
-                    float bounceStrength = 0.03f / sqrt(length(delta));
+                    float bounceStrength = 0.05f / sqrt(length(delta));
                     vec3 bounceForce = -delta * bounceStrength;
                     p1->applyForce(bounceForce);
                     p2->applyForce(bounceForce * -1.0f);

@@ -3,6 +3,7 @@
 
 #include "Particle.h"
 
+#include "Quaternion.h"
 #include "VecMat.h"
 
 #include "math.h"
@@ -59,8 +60,41 @@ public:
         vec3 p2Position = p2->getPosition();
         vec3 middle = (p1Position + p2Position) / 2.0f;
         vec3 positionDelta = p2Position - p1Position;
-        //return Translate(middle) * Scale(0.5, length(positionDelta), 0.5);
-        return LookAt(middle, p2Position, vec3(0, 1, 0)) * Scale(0.5, length(positionDelta), 0.5);
+
+        //Quaternion q(p2Position - p1Position, 0);
+        //Quaternion q(vec3(0, 0, 1), 1.57);
+        //mat4 m = q.GetMatrix();
+        //return Translate(vec3(0, 2, 0)) * m * Scale(0.5, length(positionDelta), 0.5);
+        //return Translate(middle) * m * Scale(0.5, length(positionDelta), 0.5);
+
+        vec3 up(0, 1, 0);
+        /*
+        vec3 z = normalize(positionDelta);
+        vec3 x = normalize(cross(up, z));
+        vec3 y = normalize(cross(z, x));
+        mat4 m = mat4(vec4(x, 0), vec4(y, 0), vec4(z, 0), vec4(0, 0, 0, 1));
+        */
+
+        //float angle = acos(dot(normalize(positionDelta), up));
+        //Quaternion q(x, angle);
+        //mat4 m = q.GetMatrix();
+        //printf("%f\n", angle);
+
+        vec3 zaxis = normalize(positionDelta);
+        vec3 xaxis = normalize(cross(up, zaxis));
+        vec3 yaxis = cross(zaxis, xaxis);
+
+        mat4 m = mat4(
+            vec4(xaxis.x, yaxis.x, zaxis.x, 0),
+            vec4(xaxis.y, yaxis.y, zaxis.y, 0),
+            vec4(xaxis.z, yaxis.z, zaxis.z, 0),
+            vec4(0, 0, 0, 1)
+        );
+
+        return Translate(middle) * m;
+
+        //return Translate(vec3(0, 3, 0)) * m * Scale(0.5, 0.5, length(positionDelta));
+        //return LookAt(middle, p1Position, vec3(0, 1, 0));
     }
 
 private:
