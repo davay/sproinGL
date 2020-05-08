@@ -1,4 +1,4 @@
-#include "model.h"
+#include "Model.h"
 #include "Particle.h"
 #include "Spring.h"
 #include "PhysicsManager.h"
