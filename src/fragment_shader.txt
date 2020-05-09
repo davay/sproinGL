@@ -1,0 +1,21 @@
+#version 410 core
+
+in vec3 vPoint;
+in vec3 vNormal;
+in vec3 vColor;
+
+out vec4 fragColor;
+
+void main() {
+    vec3 light = vec3(0.0f, 6.0f, 8.0f);
+    vec3 N = normalize(vNormal);            // surface normal
+    vec3 L = normalize(light - vPoint);     // light vector
+    vec3 E = normalize(vPoint);             // eye vector
+    vec3 R = reflect(L, N);                 // highlight vector
+    float d = dot(N, L);                    //  diffuse
+    float s = dot(R, E);                    //  specular
+    //float intensity = clamp(d + pow(s, 50.0f), 0.0f, 1.0f);
+    float intensity = clamp(d, 0.05f, 1.0f);
+    vec3 rgb = vColor * intensity;
+    fragColor = vec4(rgb, 1.0f);
+}

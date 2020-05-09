@@ -58,12 +58,11 @@ public:
     mat4 getXform() {
         vec3 p1Position = p1->getPosition();
         vec3 p2Position = p2->getPosition();
-        vec3 middle = (p1Position + p2Position) / 2.0f;
         vec3 positionDelta = p2Position - p1Position;
-
-        vec3 up = (dot(positionDelta, up) > 0.00001f) ? vec3(0, 1, 0) : vec3(0, 0, 1);
+        vec3 middle = (p1Position + p2Position) / 2.0f;
 
         // https://stackoverflow.com/questions/26017467/rotate-object-to-look-at-another-object-in-3-dimensions
+        vec3 up = (dot(positionDelta, up) > 0.00001f) ? vec3(0, 1, 0) : vec3(0, 0, 1);
         vec3 zaxis = normalize(positionDelta);
         vec3 xaxis = normalize(cross(up, zaxis));
         vec3 yaxis = cross(zaxis, xaxis);

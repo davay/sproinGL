@@ -1,0 +1,19 @@
+#version 410 core
+
+layout (location = 0) in vec3 point;
+layout (location = 1) in vec3 normal;
+
+out vec3 vPoint;
+out vec3 vNormal;
+out vec3 vColor;
+
+uniform mat4 modelTrans;
+uniform vec3 modelColor;
+uniform mat4 cameraView;
+
+void main() {
+    vPoint = (modelTrans * vec4(point, 1)).xyz;
+    vNormal = (modelTrans * vec4(normal, 0)).xyz;
+    vColor = modelColor;
+    gl_Position = cameraView * modelTrans * vec4(point, 1.0);
+}
