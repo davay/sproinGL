@@ -42,7 +42,7 @@ void MouseButton(GLFWwindow *w, int butn, int action, int mods) {
 }
 
 void MouseMove(GLFWwindow *w, double x, double y) {
-    if (glfwGetMouseButton(w, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+    //if (glfwGetMouseButton(w, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
         camera.MouseDrag((int) x, (int) y, Shift(w));
 }
 
@@ -65,6 +65,7 @@ int main() {
     GLFWwindow *window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "SproinGL", NULL, NULL);
 
     glfwMakeContextCurrent(window);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     //glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // glad: load all OpenGL function pointers
