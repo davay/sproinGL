@@ -2,6 +2,7 @@
 #include "Particle.h"
 #include "Spring.h"
 #include "PhysicsManager.h"
+#include "Player.h"
 
 #include "Camera.h"
 #include "Draw.h"
@@ -92,6 +93,8 @@ int main() {
     std::vector<Particle*> particles;
     std::vector<Spring*> springs;
 
+    Player player(vec3(0, 3, 0));
+
     for (int i = 0; i < 10; i++) {
         vec3 position(i * 2.2, 9.0f, -3);
         vec3 velocity(0.0f, 0.0f, 0.0f);
@@ -113,6 +116,9 @@ int main() {
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, GLFW_TRUE);
+
+        player.keyboardInput(window, &camera);
+        player.update(timeDelta);
 
         // Collide particles with each other
         for (int i = 0; i < particles.size(); i++) {
@@ -167,7 +173,7 @@ int main() {
             cylinderModel.draw(shaderProgram);
         }
 
-        monkeyModel.setXform(Translate(0, 6, 0));
+        monkeyModel.setXform(player.getXform());
         monkeyModel.draw(shaderProgram);
 
         glfwSwapBuffers(window);
