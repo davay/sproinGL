@@ -1,3 +1,4 @@
+#include "Game.h"
 #include "Model.h"
 #include "Particle.h"
 #include "Spring.h"
@@ -24,6 +25,7 @@
 const unsigned int SCREEN_WIDTH = 640;
 const unsigned int SCREEN_HEIGHT = 400;
 
+Game game;
 Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT, vec3(20.0f, -5.0f, 0.0f), vec3(0.0f, -2.0f, -40.0f), 30);
 
 bool Shift(GLFWwindow *w) {
@@ -91,20 +93,7 @@ int main() {
 
     // Initialize game objects
     PhysicsManager pm;
-    std::vector<Particle*> particles;
-    std::vector<Spring*> springs;
-
-    Player player(vec3(0, 3, 0));
-
-    for (int i = 0; i < 10; i++) {
-        vec3 position(i * 2.2, 9.0f, -3);
-        vec3 velocity(0.0f, 0.0f, 0.0f);
-        particles.push_back(new Particle(position, velocity, 1.0f, 0.1f, 0.9f));
-    }
-
-    for (int i = 0; i < 9; i++) {
-        springs.push_back(new Spring(particles[i], particles[i + 1], 2.2, 0.1, 0.01));
-    }
+    Player player(vec3(0, 3, 0), &pm);
 
     srand(time(NULL));
     double lastTime = glfwGetTime();
@@ -119,35 +108,11 @@ int main() {
             glfwSetWindowShouldClose(window, GLFW_TRUE);
 
         player.keyboardInput(window, &camera);
-        player.update(timeDelta);
 
-        // Collide particles with each other
-        for (int i = 0; i < particles.size(); i++) {
-            Particle *p1 = particles[i];
-            for (int j = i + 1; j < particles.size(); j++) {
-                Particle *p2 = particles[j];
-                vec3 delta = p2->getPosition() - p1->getPosition();
-                if (length(delta) < p1->getRadius() + p2->getRadius()) {
-                    float bounceStrength = 0.05f / sqrt(length(delta));
-                    vec3 bounceForce = -delta * bounceStrength;
-                    p1->applyForce(bounceForce);
-                    p2->applyForce(bounceForce * -1.0f);
-                }
-            }
-        }
 
-        // Apply spring forces to particles
-        for (int i = 0; i < springs.size(); i++) {
-            springs[i]->applyForce();
-        }
-
-        // Apply gravity force to particles and move them
-        for (int i = 0; i < particles.size(); i++) {
-            vec3 gravityForce(0.0f, -0.01f, 0.0f);
-            particles[i]->applyForce(gravityForce);
-            if (i != 0 && i != 5)
-                particles[i]->update(timeDelta);
-        }
+        // Update physics
+        pm.update(timeDelta);
+        player.update(timeDelta, &camera);
 
         // Clear screen
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -163,14 +128,18 @@ int main() {
         cubeModel.draw(shaderProgram);
 
         // Draw particles
-        for (int i = 0; i < particles.size(); i++) {
-            sphereModel.setXform(particles[i]->getXform());
+        std::vector<Particle*>* visibleParticles = pm.getVisibleParticles();
+        for (int i = 0; i < visibleParticles->size(); i++) {
+            Particle* particle = (*visibleParticles)[i];
+            sphereModel.setXform(particle->getXform());
             sphereModel.draw(shaderProgram);
         }
 
         // Draw springs
-        for (int i = 0; i < springs.size(); i++) {
-            cylinderModel.setXform(springs[i]->getXform());
+        std::vector<Spring*>* visibleSprings = pm.getVisibleSprings();
+        for (int i = 0; i < visibleSprings->size(); i++) {
+            Spring* spring = (*visibleSprings)[i];
+            cylinderModel.setXform(spring->getXform());
             cylinderModel.draw(shaderProgram);
         }
 

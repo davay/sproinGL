@@ -25,6 +25,14 @@ public:
         damping = 0.9f;
     }
 
+    Particle(vec3 position, float mass, float radius) {
+        this->position = position;
+        velocity = vec3(0, 0, 0);
+        this->mass = mass;
+        this->radius = radius;
+        damping = 0.9f;
+    }
+
     Particle(vec3 position) {
         this->position = position;
         velocity = vec3(0, 0, 0);
@@ -70,6 +78,10 @@ public:
         */
 
         netForce.x = netForce.y = netForce.z = 0.0f;
+    }
+
+    void setPosition(vec3 position) {
+        this->position = position;
     }
 
     mat4 getXform() {
