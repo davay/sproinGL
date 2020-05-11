@@ -93,11 +93,10 @@ int main() {
 
     // Initialize game objects
     PhysicsManager pm;
-    Player player(vec3(0, 3, 0), &pm);
+    Player player(vec3(0, 0, 0), &pm);
 
     srand(time(NULL));
     double lastTime = glfwGetTime();
-    double particleTimer = 0;
 
     while (!glfwWindowShouldClose(window)) {
         double currentTime = glfwGetTime();
@@ -107,11 +106,11 @@ int main() {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, GLFW_TRUE);
 
-        player.keyboardInput(window, &camera);
-
-
         // Update physics
         pm.update(timeDelta);
+
+        // Update player
+        player.keyboardInput(window, &camera);
         player.update(timeDelta, &camera);
 
         // Clear screen
@@ -144,7 +143,7 @@ int main() {
         }
 
         monkeyModel.setXform(player.getXform());
-        monkeyModel.draw(shaderProgram);
+        //monkeyModel.draw(shaderProgram);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
