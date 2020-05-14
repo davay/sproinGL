@@ -23,9 +23,11 @@ public:
 
         base = new Particle(controllerPosition, 1, 0.5);
         hips = new Particle(controllerPosition + vec3(0, 2, 0), 1, 0.8);
-        leftFoot = new Particle(leftFootTarget, 1, 0.5);
-        rightFoot = new Particle(rightFootTarget, 1, 0.5);
-        hips = new Particle(controllerPosition + vec3(0, 2, 0), 1, 0.8);
+        leftFoot = new Particle(leftFootTarget, 1, 0.3);
+        rightFoot = new Particle(rightFootTarget, 1, 0.3);
+        //hips = new Particle(controllerPosition + vec3(0, 2, 0), 1, 0.8);
+        leftHand = new Particle(controllerPosition + vec3(1.2, 2, 0), 1, 0.3);
+        rightHand = new Particle(controllerPosition + vec3(-1.2, 2, 0), 1, 0.3);
         shouldMoveLeftFoot = true;
 
         stride = 0;
@@ -34,10 +36,15 @@ public:
         pm->addParticle(hips);
         pm->addParticle(leftFoot);
         pm->addParticle(rightFoot);
+        pm->addParticle(leftHand);
+        pm->addParticle(rightHand);
 
         pm->addSpring(new Spring(hips, base, 2, 0.08, 0.08), false);
         pm->addSpring(new Spring(hips, leftFoot, 2, 0.08, 0.08));
         pm->addSpring(new Spring(hips, rightFoot, 2, 0.08, 0.08));
+        pm->addSpring(new Spring(hips, leftHand, 1.2, 0.08, 0.08));
+        pm->addSpring(new Spring(hips, rightHand, 1.2, 0.08, 0.08));
+        pm->addSpring(new Spring(leftHand, rightHand, 3, 0.02, 0.001), false);
     }
 
     void keyboardInput(GLFWwindow *window, Camera *camera) {
@@ -128,6 +135,7 @@ public:
 
         if (isOnGround) {
             strideLength = length(controllerVelocity) * 13.0;
+            if (strideLength < 0.7) strideLength = 0.7;
             if (stride >= strideLength) {
                 vec3 up(0, 1, 0);
                 if (shouldMoveLeftFoot) {
@@ -179,8 +187,8 @@ public:
 
 private:
     const float CONTROLLER_RADIUS = 0.5f;
-    const float MAX_SPEED = 0.15f;
-    const float MOVE_FORCE = 0.02f;
+    const float MAX_SPEED = 0.18f;
+    const float MOVE_FORCE = 0.015f;
     const float MOVE_FRICTION = 0.08f;
     const float STRIDE_LENGTH = 2.5f;
     const float STRIDE_LENGTH_MIN = 0.1f;
@@ -201,6 +209,8 @@ private:
     Particle *hips;
     Particle *leftFoot;
     Particle *rightFoot;
+    Particle *leftHand;
+    Particle *rightHand;
 };
 
 #endif
