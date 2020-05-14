@@ -89,7 +89,7 @@ public:
 
         mat4 t = Transpose(m);
 
-        return Translate(middle) * t * Scale(1, 1, length(positionDelta));
+        return Translate(middle) * t * Scale(0.5, 0.5, length(positionDelta));
     }
 
 private:

@@ -9,15 +9,40 @@
 class PhysicsManager {
 public:
     PhysicsManager() {
-        for (int i = 0; i < 10; i++) {
-            vec3 position(i * 2.2, 9.0f, -3);
-            vec3 velocity(0.0f, 0.0f, 0.0f);
-            addParticle(new Particle(position, velocity, 1.0f, 0.5f, 0.9f));
+        int w = 10;
+        int h = 5;
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                if (y == 0) {
+                    addParticle(new Particle(vec3(-5 + x * 2, 7 + -y * 2, -3 + y), 0.5f, 0.5f));
+                }
+                else {
+                    addParticle(new Particle(vec3(-5 + x * 2, 7 + -y * 2, -3 + y), 0.5f, 0.5f));
+                }
+            }
         }
 
-        for (int i = 0; i < 9; i++) {
-            addSpring(new Spring(particles[i], particles[i + 1], 2.2, 0.2, 0.05));
+        for (int y = 0; y < h-1; y++) {
+            for (int x = 0; x < w-1; x++) {
+                addSpring(new Spring(particles[y * w + x], particles[y * w + x + 1], 2, 0.1, 0.1));
+                addSpring(new Spring(particles[y * w + x], particles[(y + 1) * w + x], 2, 0.1, 0.1));
+            }
         }
+
+        for (int i = 0; i < 10; i++) {
+            vec3 position(i * 4, 9.0f, -3);
+            vec3 velocity(0.0f, 0.0f, 0.0f);
+            addParticle(new Particle(position, velocity, 1.0f, 1.5f, 0.9f, false));
+        }
+
+        /*
+        for (int y = 0; y < h; y++) {
+            addSpring(new Spring(particles[y * w + 4], particles[(y + 1) * w + 4], 2, 0.1, 0.1));
+        }
+        for (int x = 0; x < w; x++) {
+            addSpring(new Spring(particles[4 * 5 + x], particles[4 * 5 + x + 1], 2, 0.1, 0.1));
+        }
+        */
     }
 
     void update(float timeDelta) {
@@ -49,7 +74,6 @@ public:
 
         // Move particles
         for (int i = 0; i < particles.size(); i++) {
-            if (i > 0)
             particles[i]->update(timeDelta);
         }
     }

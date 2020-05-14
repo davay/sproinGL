@@ -9,20 +9,13 @@
 
 class Particle {
 public:
-    Particle(vec3 position, vec3 velocity, float mass, float radius, float damping) {
+    Particle(vec3 position, vec3 velocity, float mass, float radius, float damping, bool isForceExempt) {
         this->position = position;
         this->velocity = velocity;
         this->mass = mass;
         this->radius = radius;
         this->damping = damping;
-    }
-
-    Particle(vec3 position, vec3 velocity) {
-        this->position = position;
-        this->velocity = velocity;
-        mass = 1.0f;
-        radius = 1.0f;
-        damping = 0.9f;
+        isForceExempt = false;
     }
 
     Particle(vec3 position, float mass, float radius) {
@@ -31,6 +24,7 @@ public:
         this->mass = mass;
         this->radius = radius;
         damping = 0.9f;
+        isForceExempt = false;
     }
 
     Particle(vec3 position) {
@@ -39,6 +33,7 @@ public:
         mass = 1.0f;
         radius = 1.0f;
         damping = 0.9f;
+        isForceExempt = false;
     }
 
     void applyForce(vec3 force) {
@@ -46,9 +41,11 @@ public:
     }
 
     void update(double timeDelta) {
-        vec3 acceleration = netForce * (1.0f / mass);
-        velocity += acceleration;
-        position += velocity;
+        if (!isForceExempt) {
+            vec3 acceleration = netForce * (1.0f / mass);
+            velocity += acceleration;
+            position += velocity;
+        }
 
         /*
         if (position.x - radius < -10.0f) {
@@ -84,6 +81,10 @@ public:
         this->position = position;
     }
 
+    void setForceExcemption(bool isForceExempt) {
+        this->isForceExempt = isForceExempt;
+    }
+
     mat4 getXform() {
         return Translate(position) * Scale(radius, radius, radius);
     }
@@ -99,6 +100,7 @@ private:
     float mass;
     float radius;
     float damping;
+    bool isForceExempt;
 };
 
 #endif

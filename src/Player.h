@@ -18,23 +18,26 @@ public:
         controllerDirection = vec3(0, 0, 0);
 
         tailPosition = controllerPosition - vec3(0, 0, 1);
-        leftFootTarget = controllerPosition + vec3(1, 0, 0);
-        rightFootTarget = controllerPosition + vec3(-1, 0, 0);
+        leftFootTarget = controllerPosition + vec3(0.5, 0, 0);
+        rightFootTarget = controllerPosition + vec3(-0.5, 0, 0);
 
         base = new Particle(controllerPosition, 1, 0.5);
         hips = new Particle(controllerPosition + vec3(0, 2, 0), 1, 0.8);
-        leftFoot = new Particle(leftFootTarget, 1, 0.4);
-        rightFoot = new Particle(rightFootTarget, 1, 0.4);
+        leftFoot = new Particle(leftFootTarget, 1, 0.5);
+        rightFoot = new Particle(rightFootTarget, 1, 0.5);
+        hips = new Particle(controllerPosition + vec3(0, 2, 0), 1, 0.8);
         shouldMoveLeftFoot = true;
+
+        stride = 0;
 
         pm->addParticle(base, false);
         pm->addParticle(hips);
         pm->addParticle(leftFoot);
-        //pm->addParticle(rightFoot);
+        pm->addParticle(rightFoot);
 
-        pm->addSpring(new Spring(hips, base, 2, 0.08, 0.08));
+        pm->addSpring(new Spring(hips, base, 2, 0.08, 0.08), false);
         pm->addSpring(new Spring(hips, leftFoot, 2, 0.08, 0.08));
-        //pm->addSpring(new Spring(hips, rightFoot, 2, 0.08, 0.08));
+        pm->addSpring(new Spring(hips, rightFoot, 2, 0.08, 0.08));
     }
 
     void keyboardInput(GLFWwindow *window, Camera *camera) {
@@ -97,6 +100,8 @@ public:
             controllerVelocity.y = yy;
         }
 
+        stride += length(vec3(controllerVelocity.x, 0, controllerVelocity.z));
+
         // Update position
         controllerPosition += controllerVelocity;
 
@@ -120,34 +125,34 @@ public:
         base->setPosition(controllerPosition);
         hips->setPosition(vec3(base->getPosition().x, hips->getPosition().y, base->getPosition().z));
 
-        //float strideLength = length(controllerVelocity) * 20 + 0.5;
-        float strideLength = 1.5;
-        if (length(leftFootTarget - controllerPosition) > strideLength + 0.5) {
-            leftFootTarget = controllerPosition + bodyDirection * strideLength;
-        }
 
         if (isOnGround) {
-            leftFoot->setPosition(leftFootTarget);
-        }
+            strideLength = length(controllerVelocity) * 13.0;
+            if (stride >= strideLength) {
+                vec3 up(0, 1, 0);
+                if (shouldMoveLeftFoot) {
+                    vec3 rightOffset = normalize(cross(bodyDirection, up)) * 0.5;
+                    rightFootTarget = controllerPosition + rightOffset + bodyDirection * (STRIDE_LENGTH_MIN + length(controllerVelocity) * 14);
+                } else {
+                    vec3 leftOffset = -normalize(cross(bodyDirection, up)) * 0.5;
+                    leftFootTarget = controllerPosition + leftOffset + bodyDirection * (STRIDE_LENGTH_MIN + length(controllerVelocity) * 14);
+                }
 
-        //printf("%d\n", shouldMoveLeftFoot);
-        /*
-        if (shouldMoveLeftFoot) {
-            leftFoot->setPosition(leftFoot->getPosition() + (leftFootTarget - leftFoot->getPosition()) * 0.001);
-            rightFoot->setPosition(rightFootTarget);
-            if (length(rightFootTarget - hips->getPosition()) > 4) {
-                rightFootTarget = controllerPosition + bodyDirection * 3;
-                shouldMoveLeftFoot = false;
+                stride = 0;
+                shouldMoveLeftFoot = !shouldMoveLeftFoot;
             }
+
+            vec3 leftFootPosition = leftFoot->getPosition();
+            vec3 rightFootPosition = rightFoot->getPosition();
+
+            leftFoot->setPosition(leftFootPosition + (leftFootTarget - leftFootPosition) * 0.3);
+            rightFoot->setPosition(rightFootPosition + (rightFootTarget - rightFootPosition) * 0.3);
+            leftFoot->setForceExcemption(true);
+            rightFoot->setForceExcemption(true);
         } else {
-            rightFoot->setPosition(rightFoot->getPosition() + (rightFootTarget - rightFoot->getPosition()) * 0.001);
-            leftFoot->setPosition(leftFootTarget);
-            if (length(leftFootTarget - hips->getPosition()) > 4) {
-                leftFootTarget = controllerPosition + bodyDirection * 3;
-                shouldMoveLeftFoot = true;
-            }
+            leftFoot->setForceExcemption(false);
+            rightFoot->setForceExcemption(false);
         }
-        */
     }
 
     mat4 getXform() {
@@ -176,7 +181,9 @@ private:
     const float CONTROLLER_RADIUS = 0.5f;
     const float MAX_SPEED = 0.15f;
     const float MOVE_FORCE = 0.02f;
-    const float MOVE_FRICTION = 0.1f;
+    const float MOVE_FRICTION = 0.08f;
+    const float STRIDE_LENGTH = 2.5f;
+    const float STRIDE_LENGTH_MIN = 0.1f;
 
     vec3 controllerPosition;
     vec3 controllerDirection;
@@ -187,6 +194,7 @@ private:
     vec3 bodyDirection;
     vec3 leftFootTarget;
     vec3 rightFootTarget;
+    float stride, strideLength;
     bool shouldMoveLeftFoot;
 
     Particle *base;
