@@ -65,7 +65,7 @@ int main() {
     GLFWwindow *window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "SproinGL", NULL, NULL);
 
     glfwMakeContextCurrent(window);
-    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     //glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // glad: load all OpenGL function pointers
@@ -141,7 +141,7 @@ int main() {
         }
 
         monkeyModel.setXform(player.getXform());
-        //monkeyModel.draw(shaderProgram);
+        monkeyModel.draw(shaderProgram);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

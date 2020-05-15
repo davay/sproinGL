@@ -81,6 +81,10 @@ public:
         this->position = position;
     }
 
+    void setVelocity(vec3 velocity) {
+        this->velocity = velocity;
+    }
+
     void setForceExcemption(bool isForceExempt) {
         this->isForceExempt = isForceExempt;
     }
