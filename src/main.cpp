@@ -3,6 +3,7 @@
 #include "Spring.h"
 #include "PhysicsManager.h"
 #include "Player.h"
+#include "Game.h"
 
 #include "Camera.h"
 #include "Draw.h"
@@ -18,14 +19,12 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
 
 const unsigned int SCREEN_WIDTH = 640;
 const unsigned int SCREEN_HEIGHT = 400;
 
-Camera camera(SCREEN_WIDTH, SCREEN_HEIGHT, vec3(20.0f, -5.0f, 0.0f), vec3(0.0f, -2.0f, -40.0f), 30);
-
+/*
 bool Shift(GLFWwindow *w) {
     return glfwGetKey(w, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
            glfwGetKey(w, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
@@ -49,6 +48,7 @@ void MouseMove(GLFWwindow *w, double x, double y) {
 void resize(GLFWwindow *window, int width, int height) {
     camera.Resize(width, height);
 }
+*/
 
 int main() {
     glfwInit();
@@ -65,7 +65,7 @@ int main() {
     GLFWwindow *window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "SproinGL", NULL, NULL);
 
     glfwMakeContextCurrent(window);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     //glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // glad: load all OpenGL function pointers
@@ -74,28 +74,16 @@ int main() {
     // Build and compile shader program
     int shaderProgram = LinkProgramViaFile("./src/vertex_shader.txt", "./src/fragment_shader.txt");
 
-    // callbacks
+    // Set callbacks
+    /*
     glfwSetCursorPosCallback(window, MouseMove);
     glfwSetMouseButtonCallback(window, MouseButton);
     glfwSetWindowSizeCallback(window, resize);
+    */
 
-    // Load models
-    Model sphereModel(vec3(1.0f, 0.5f, 0.2f));
-    Model cubeModel(vec3(1.0f, 0.3f, 0.4f));
-    Model cylinderModel(vec3(1.0f, 1.0f, 1.0f));
-    Model monkeyModel(vec3(0.3f, 0.7f, 0.0f));
-    sphereModel.read("./assets/sphere.obj", "‎⁨.⁩/assets/lily.tga⁩");
-    cubeModel.read("./assets/cube.obj", "‎⁨.⁩/assets/lily.tga⁩");
-    cylinderModel.read("./assets/cylinder.obj", "‎⁨.⁩/assets/lily.tga⁩");
-    monkeyModel.read("./assets/monkey.obj", "‎⁨.⁩/assets/lily.tga⁩");
+    Game game(window, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    // Initialize game objects
-    PhysicsManager pm;
-    Player player(vec3(0, 0, 0), &pm);
-
-    srand(time(NULL));
     double lastTime = glfwGetTime();
-
     while (!glfwWindowShouldClose(window)) {
         double currentTime = glfwGetTime();
         double timeDelta = currentTime - lastTime;
@@ -104,44 +92,14 @@ int main() {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, GLFW_TRUE);
 
-        // Update physics
-        pm.update(timeDelta);
-
-        // Update player
-        player.keyboardInput(window, &camera);
-        player.update(timeDelta, &camera);
+        game.update(timeDelta);
 
         // Clear screen
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
 
-        // Set shader
-        glUseProgram(shaderProgram);
-        SetUniform(shaderProgram, "cameraView", camera.fullview);
-
-        // Draw arena
-        cubeModel.setXform(Translate(0.0f, -10.0f, 0.0f));
-        cubeModel.draw(shaderProgram);
-
-        // Draw particles
-        std::vector<Particle*>* visibleParticles = pm.getVisibleParticles();
-        for (int i = 0; i < visibleParticles->size(); i++) {
-            Particle* particle = (*visibleParticles)[i];
-            sphereModel.setXform(particle->getXform());
-            sphereModel.draw(shaderProgram);
-        }
-
-        // Draw springs
-        std::vector<Spring*>* visibleSprings = pm.getVisibleSprings();
-        for (int i = 0; i < visibleSprings->size(); i++) {
-            Spring* spring = (*visibleSprings)[i];
-            cylinderModel.setXform(spring->getXform());
-            cylinderModel.draw(shaderProgram);
-        }
-
-        monkeyModel.setXform(player.getXform());
-        monkeyModel.draw(shaderProgram);
+        game.draw(shaderProgram);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

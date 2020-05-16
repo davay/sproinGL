@@ -22,9 +22,9 @@ public:
         shouldMoveLeftFoot = true;
         stride = 0;
 
-        // Physics components
+        // Define physics components
         base = new Particle(controllerPosition, 1, FOOT_RADIUS);
-        torso = new Particle(controllerPosition + vec3(0, HEIGHT, 0), 1, 0.8);
+        torso = new Particle(controllerPosition + vec3(0, HEIGHT, 0), 1, 0.5);
         leftHand = new Particle(controllerPosition + vec3(ARM_LENGTH, HEIGHT, 0), 0.1, HAND_RADIUS);
         rightHand = new Particle(controllerPosition + vec3(-ARM_LENGTH, HEIGHT, 0), 0.1, HAND_RADIUS);
         leftFoot = new Particle(leftFootTarget, 0.1, FOOT_RADIUS);
@@ -78,6 +78,10 @@ public:
                 controllerVelocity.y = 0.3;
                 base->setVelocity(controllerVelocity);
                 torso->setVelocity(controllerVelocity);
+                //leftFoot->applyForce(vec3(0.01, 0.02, 0.02));
+                //rightFoot->applyForce(vec3(0.01, 0.02, -0.02));
+                //leftFoot->setVelocity(controllerVelocity * 20);
+                //rightFoot->setVelocity(controllerVelocity * 20);
                 isOnGround = false;
             }
         }
@@ -110,16 +114,14 @@ public:
         // Update position
         controllerPosition += controllerVelocity;
 
+        // Determine body direction from invisible "tail"
         vec3 delta = controllerPosition - tailPosition;
         float r = 0.5 / length(delta);
         tailPosition = controllerPosition - delta * r;
-
         delta = normalize(controllerPosition - tailPosition);
         bodyDirection.x = delta.x;
         bodyDirection.y = 0;
         bodyDirection.z = delta.z;
-
-        stride += length(vec3(controllerVelocity.x, 0, controllerVelocity.z));
 
         // Collide with ground
         bool wasOnGround = isOnGround;
@@ -133,11 +135,15 @@ public:
         base->setPosition(controllerPosition);
         torso->setPosition(vec3(base->getPosition().x, torso->getPosition().y, base->getPosition().z));
 
+        // Animate walk cycle while on the ground
         if (isOnGround) {
+            stride += length(vec3(controllerVelocity.x, 0, controllerVelocity.z));
+
             // Determine the length of a stride based on the current horizontal velocity
             strideLength = length(controllerVelocity) * 13.0;
             if (strideLength < 0.7) strideLength = 0.7;
 
+            // After landing a jump, set new foot target positions
             if (!wasOnGround) {
                 vec3 up(0, 1, 0);
                 vec3 footStraddleOffset = normalize(cross(bodyDirection, up)) * FOOT_STRADDLE_OFFSET;
@@ -161,19 +167,21 @@ public:
                     leftFootTarget = footTarget - footStraddleOffset;
                 }
 
-                // Swap which foot to move next
                 stride = 0;
                 shouldMoveLeftFoot = !shouldMoveLeftFoot;
             }
 
+            // Move feet (gradually) toward their respective target positions
             vec3 leftFootPosition = leftFoot->getPosition();
             vec3 rightFootPosition = rightFoot->getPosition();
 
             leftFoot->setPosition(leftFootPosition + (leftFootTarget - leftFootPosition) * STEP_SPEED);
             rightFoot->setPosition(rightFootPosition + (rightFootTarget - rightFootPosition) * STEP_SPEED);
+
             leftFoot->setForceExcemption(true);
             rightFoot->setForceExcemption(true);
         } else {
+            // Feet are free-floating while in midair
             leftFoot->setForceExcemption(false);
             rightFoot->setForceExcemption(false);
         }
@@ -212,7 +220,7 @@ private:
     const float MOVE_FRICTION = 0.08f;
     const float STRIDE_LENGTH = 2.5f;
     const float STRIDE_LENGTH_MIN = 0.1f;
-    const float STEP_SPEED = 0.3;
+    const float STEP_SPEED = 0.25;
     const float FOOT_STRADDLE_OFFSET = 0.5;
     const float FOOT_RADIUS = 0.3f;
     const float HAND_RADIUS = 0.3f;

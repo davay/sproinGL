@@ -9,9 +9,9 @@
 class PhysicsManager {
 public:
     PhysicsManager() {
-        int w = 3;
-        int h = 3;
-        int d = 3;
+        int w = 4;
+        int h = 4;
+        int d = 4;
 
         for (int z = 0; z < d; z++) {
             for (int y = 0; y < h; y++) {
