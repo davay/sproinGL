@@ -9,9 +9,9 @@
 class PhysicsManager {
 public:
     PhysicsManager() {
-        int w = 4;
-        int h = 4;
-        int d = 4;
+        int w = 5;
+        int h = 5;
+        int d = 5;
 
         for (int z = 0; z < d; z++) {
             for (int y = 0; y < h; y++) {
@@ -42,9 +42,11 @@ public:
         // Collide particles with each other
         for (int i = 0; i < particles.size(); i++) {
             Particle *p1 = particles[i];
+
             for (int j = i + 1; j < particles.size(); j++) {
                 Particle *p2 = particles[j];
                 vec3 delta = p2->getPosition() - p1->getPosition();
+
                 if (length(delta) < p1->getRadius() + p2->getRadius()) {
                     float bounceStrength = 0.01f / sqrt(length(delta));
                     vec3 bounceForce = -delta * bounceStrength;
@@ -61,8 +63,7 @@ public:
 
         // Apply gravity force to particles
         for (int i = 0; i < particles.size(); i++) {
-            //vec3 gravityForce(0.0f, -0.01f, 0.0f);
-            vec3 gravityForce(0.0f, -0.005f, 0.0f);
+            vec3 gravityForce(0.0f, -GRAVITY_STRENGTH, 0.0f);
             particles[i]->applyForce(gravityForce);
         }
 
@@ -99,6 +100,8 @@ public:
     }
 
 private:
+    const float GRAVITY_STRENGTH = 0.005f;
+
     std::vector<Particle*> particles;
     std::vector<Spring*> springs;
 

@@ -72,7 +72,7 @@ int main() {
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
     // Build and compile shader program
-    int shaderProgram = LinkProgramViaFile("./src/vertex_shader.txt", "./src/fragment_shader.txt");
+    int shaderProgram = LinkProgramViaFile("./src/shaders/vertex_shader.txt", "./src/shaders/fragment_shader.txt");
 
     // Set callbacks
     /*
