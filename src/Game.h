@@ -44,8 +44,8 @@ public:
         pm.update(timeDelta);
 
         // Update player
-        player.input(window, &camera);
-        player.update(timeDelta, &camera);
+        player.input(window);
+        player.update(timeDelta);
 
         centipede.update(timeDelta);
 
@@ -58,7 +58,7 @@ public:
         SetUniform(shaderProgram, "cameraView", gameCamera.getView());
 
         // Draw arena
-        cubeModel.setXform(Translate(0.0f, -10.0f, 0.0f));
+        cubeModel.setXform(Translate(0.0f, -1.0f, 0.0f) * Scale(25, 1, 25));
         cubeModel.draw(shaderProgram);
 
         // Draw particles
@@ -79,10 +79,6 @@ public:
 
         monkeyModel.setXform(player.getXform());
         monkeyModel.draw(shaderProgram);
-    }
-
-    static void mouseMoveCallback(GLFWwindow *window, double mouseX, double mouseY) {
-        //gameCamera.rotate(mouseX, mouseY);
     }
 
     Player* getPlayer() {

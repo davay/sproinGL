@@ -76,7 +76,7 @@ int main() {
     int shaderProgram = LinkProgramViaFile("./src/shaders/vertex_shader.txt", "./src/shaders/fragment_shader.txt");
 
     // Set callbacks
-    glfwSetCursorPosCallback(window, game.mouseMoveCallback);
+    //glfwSetCursorPosCallback(window, game.mouseMoveCallback);
     /*
     glfwSetMouseButtonCallback(window, MouseButton);
     glfwSetWindowSizeCallback(window, resize);

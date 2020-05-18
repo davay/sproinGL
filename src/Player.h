@@ -19,6 +19,7 @@ public:
         controllerVelocity = vec3(0, 0, 0);
         controllerDirection = vec3(0, 0, 1);
         lookDirection = vec3(0, 0, 1);
+        up = vec3(0, 1, 0);
         tailPosition = controllerPosition - vec3(0, 0, 1);
         leftFootTarget = controllerPosition + vec3(FOOT_STRADDLE_OFFSET, 0, 0);
         rightFootTarget = controllerPosition + vec3(-FOOT_STRADDLE_OFFSET, 0, 0);
@@ -48,8 +49,7 @@ public:
         pm->addSpring(new Spring(leftHand, rightHand, 5, 0.004, 0.001), false);
     }
 
-    void input(GLFWwindow *window, Camera *camera) {
-        mat4 cameraAngle = camera->GetRotate();
+    void input(GLFWwindow *window) {
         isMoving = false;
 
         // Keyboard input for movement
@@ -59,27 +59,29 @@ public:
             isMoving = true;
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            vec3 backward = normalize(vec3(-lookDirection.x, 0, -lookDirection.z));
+            vec3 backward = normalize(-vec3(lookDirection.x, 0, lookDirection.z));
             controllerVelocity += backward * MOVE_FORCE;
             isMoving = true;
         }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            vec3 left = normalize(cross(vec3(0, 1, 0), lookDirection));
+            vec3 left = normalize(cross(up, lookDirection));
             controllerVelocity += left * MOVE_FORCE;
             isMoving = true;
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            vec3 right = normalize(cross(lookDirection, vec3(0, 1, 0)));
+            vec3 right = normalize(cross(lookDirection, up));
             controllerVelocity += right * MOVE_FORCE;
             isMoving = true;
         }
         if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+            /*
             if (isOnGround) {
                 controllerVelocity.y = 0.3;
                 base->setVelocity(controllerVelocity);
                 torso->setVelocity(controllerVelocity);
                 isOnGround = false;
             }
+            */
         }
 
         // Mouse input for look direction
@@ -104,14 +106,7 @@ public:
         lookDirection = normalize(direction);
     }
 
-    void update(double timeDelta, Camera* camera) {
-        /*
-        vec4 cameraDirection = camera->GetRotate() * vec4(0, 0, 1, 1);
-        bodyDirection.x = cameraDirection.x;
-        bodyDirection.y = cameraDirection.y;
-        bodyDirection.z = cameraDirection.z;
-        */
-
+    void update(double timeDelta) {
         // Apply gravity
         controllerVelocity += vec3(0, -0.01, 0);
 
@@ -154,15 +149,15 @@ public:
 
         // Animate walk cycle while on the ground
         if (isOnGround) {
-            stride += length(vec3(controllerVelocity.x, 0, controllerVelocity.z));
+            vec3 horizontalVelocity = vec3(controllerVelocity.x, 0, controllerVelocity.z);
+            stride += length(horizontalVelocity);
 
             // Determine the length of a stride based on the current horizontal velocity
-            strideLength = length(controllerVelocity) * 13.0;
-            if (strideLength < 0.7) strideLength = 0.7;
+            strideLength = length(horizontalVelocity) * 13.0;
+            if (strideLength < 0.6) strideLength = 0.6;
 
             // After landing a jump, set new foot target positions
             if (!wasOnGround) {
-                vec3 up(0, 1, 0);
                 vec3 footStraddleOffset = normalize(cross(bodyDirection, up)) * FOOT_STRADDLE_OFFSET;
                 vec3 leftOffset = -normalize(cross(bodyDirection, up)) * FOOT_STRADDLE_OFFSET;
                 vec3 rightOffset = normalize(cross(bodyDirection, up)) * FOOT_STRADDLE_OFFSET;
@@ -172,9 +167,8 @@ public:
 
             // Start a new stride with the opposite foot
             if (stride >= strideLength) {
-                vec3 up(0, 1, 0);
                 vec3 footStraddleOffset = normalize(cross(bodyDirection, up)) * FOOT_STRADDLE_OFFSET;
-                vec3 footTarget = controllerPosition + normalize(controllerVelocity) * (STRIDE_LENGTH_MIN + length(controllerVelocity) * 14);
+                vec3 footTarget = controllerPosition + normalize(horizontalVelocity) * (STRIDE_LENGTH_MIN + length(controllerVelocity) * 14);
 
                 if (shouldMoveLeftFoot) {
                     // Play popping noise
@@ -188,7 +182,7 @@ public:
                 shouldMoveLeftFoot = !shouldMoveLeftFoot;
             }
 
-            // Move feet (gradually) toward their respective target positions
+            // Move feet toward their respective target positions
             vec3 leftFootPosition = leftFoot->getPosition();
             vec3 rightFootPosition = rightFoot->getPosition();
 
@@ -209,7 +203,6 @@ public:
     }
 
     mat4 getXform() {
-        vec3 up(0, 1, 0);
         vec3 z = normalize(lookDirection);
         vec3 x = normalize(cross(up, z));
         vec3 y = normalize(cross(z, x));
@@ -223,7 +216,8 @@ public:
 
         mat4 t = Transpose(m);
 
-        return Translate(torso->getPosition()) * t;
+        return Translate(torso->getPosition()) * t * Scale(0.8, 0.8, 0.8);
+        //return Translate(controllerPosition) * Scale(0.4, 0.4, 0.4);
     }
 
     vec3 getControllerPosition() {
@@ -242,17 +236,18 @@ private:
     const float STRIDE_LENGTH = 2.5f;
     const float STRIDE_LENGTH_MIN = 0.1f;
     const float STEP_SPEED = 0.25;
-    const float FOOT_STRADDLE_OFFSET = 0.5;
+    const float FOOT_STRADDLE_OFFSET = 0.6;
     const float FOOT_RADIUS = 0.3f;
     const float HAND_RADIUS = 0.3f;
 
     const float HEIGHT = 2.0f;
-    const float ARM_LENGTH = 1.3f;
+    const float ARM_LENGTH = 1.2f;
     const float LEG_LENGTH = 2.0f;
 
     vec3 controllerPosition;
     vec3 controllerDirection;
     vec3 controllerVelocity;
+    vec3 up;
     float pitch, yaw;
     vec3 lookDirection;
     double lastMouseX, lastMouseY;
