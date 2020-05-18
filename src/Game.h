@@ -23,8 +23,7 @@
 class Game {
 public:
     Game(GLFWwindow *window, unsigned int screenWidth, int screenHeight)
-        : camera(screenWidth, screenHeight, vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, -2.0f, -40.0f), 30)
-        , gameCamera(vec3(0, 1, 10))
+        : gameCamera(vec3(0, 1, 10))
         , player(&pm, vec3(0, 0, 0))
         , centipede(&pm, vec3(5, 1, 0))
         , sphereModel(vec3(1.0f, 0.5f, 0.2f))
@@ -43,18 +42,16 @@ public:
         // Update physics
         pm.update(timeDelta);
 
-        // Update player
+        // Update entities
         player.input(window);
         player.update(timeDelta);
-
-        centipede.update(timeDelta);
+        centipede.update(timeDelta, &player);
 
         gameCamera.update(timeDelta, &player);
     }
 
     void draw(int shaderProgram) {
         glUseProgram(shaderProgram);
-        //SetUniform(shaderProgram, "cameraView", camera.fullview);
         SetUniform(shaderProgram, "cameraView", gameCamera.getView());
 
         // Draw arena
@@ -88,7 +85,6 @@ public:
 private:
     GLFWwindow *window;
     PhysicsManager pm;
-    Camera camera;
     GameCamera gameCamera;
     Player player;
     Centipede centipede;

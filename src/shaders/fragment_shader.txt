@@ -15,7 +15,7 @@ void main() {
     float d = dot(N, L);                    //  diffuse
     float s = dot(R, E);                    //  specular
     //float intensity = clamp(d + pow(s, 50.0f), 0.0f, 1.0f);
-    float intensity = clamp(d, 0.05f, 1.0f);
+    float intensity = clamp(d, 0.1f, 1.0f);
     vec3 rgb = vColor * intensity;
     fragColor = vec4(rgb, 1.0f);
 }

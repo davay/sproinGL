@@ -75,13 +75,6 @@ int main() {
     Game game(window, SCREEN_WIDTH, SCREEN_HEIGHT);
     int shaderProgram = LinkProgramViaFile("./src/shaders/vertex_shader.txt", "./src/shaders/fragment_shader.txt");
 
-    // Set callbacks
-    //glfwSetCursorPosCallback(window, game.mouseMoveCallback);
-    /*
-    glfwSetMouseButtonCallback(window, MouseButton);
-    glfwSetWindowSizeCallback(window, resize);
-    */
-
     double lastTime = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {
         double currentTime = glfwGetTime();

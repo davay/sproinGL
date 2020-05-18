@@ -29,8 +29,8 @@ public:
         // Define physics components
         base = new Particle(controllerPosition, 1, FOOT_RADIUS);
         torso = new Particle(controllerPosition + vec3(0, HEIGHT, 0), 1, 0.5);
-        leftHand = new Particle(controllerPosition + vec3(ARM_LENGTH, HEIGHT, 0), 0.1, HAND_RADIUS);
-        rightHand = new Particle(controllerPosition + vec3(-ARM_LENGTH, HEIGHT, 0), 0.1, HAND_RADIUS);
+        leftHand = new Particle(controllerPosition + vec3(ARM_LENGTH, HEIGHT, 0), 0.5, HAND_RADIUS);
+        rightHand = new Particle(controllerPosition + vec3(-ARM_LENGTH, HEIGHT, 0), 0.5, HAND_RADIUS);
         leftFoot = new Particle(leftFootTarget, 0.1, FOOT_RADIUS);
         rightFoot = new Particle(rightFootTarget, 0.1, FOOT_RADIUS);
 
@@ -74,6 +74,7 @@ public:
             isMoving = true;
         }
         if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+            // TODO: Fix bug where feet sometimes start stepping in the wrong place after landing a jump
             /*
             if (isOnGround) {
                 controllerVelocity.y = 0.3;
@@ -88,21 +89,26 @@ public:
         double mouseX, mouseY;
         glfwGetCursorPos(window, &mouseX, &mouseY);
 
-        // TODO: Clean this up
-        float xoffset = mouseX - lastMouseX;
-        float yoffset = lastMouseY  - mouseY;
+        float xOffset = mouseX - lastMouseX;
+        float yOffset = lastMouseY  - mouseY;
         lastMouseX = mouseX;
         lastMouseY = mouseY;
-        const float sensitivity = 0.005f;
-        xoffset *= sensitivity;
-        yoffset *= sensitivity;
-        yaw   += xoffset;
-        pitch += yoffset;
+
+        float mouseSensitivity = 0.005f;
+        xOffset *= mouseSensitivity;
+        yOffset *= mouseSensitivity;
+        yaw   += xOffset;
+        pitch += yOffset;
+
+        if (pitch > -0.1) pitch = -0.1;
+        if (pitch < -0.9) pitch = -0.9;
+
         vec3 direction = vec3(
             cos(yaw) * cos(pitch),
             sin(pitch),
             sin(yaw) * cos(pitch)
         );
+        
         lookDirection = normalize(direction);
     }
 
@@ -153,7 +159,7 @@ public:
             stride += length(horizontalVelocity);
 
             // Determine the length of a stride based on the current horizontal velocity
-            strideLength = length(horizontalVelocity) * 13.0;
+            strideLength = length(horizontalVelocity) * 12.0;
             if (strideLength < 0.6) strideLength = 0.6;
 
             // After landing a jump, set new foot target positions
@@ -167,8 +173,8 @@ public:
 
             // Start a new stride with the opposite foot
             if (stride >= strideLength) {
-                vec3 footStraddleOffset = normalize(cross(bodyDirection, up)) * FOOT_STRADDLE_OFFSET;
-                vec3 footTarget = controllerPosition + normalize(horizontalVelocity) * (STRIDE_LENGTH_MIN + length(controllerVelocity) * 14);
+                vec3 footStraddleOffset = normalize(cross(horizontalVelocity, up)) * FOOT_STRADDLE_OFFSET;
+                vec3 footTarget = controllerPosition + normalize(horizontalVelocity) * (STRIDE_LENGTH_MIN + length(controllerVelocity) * 15);
 
                 if (shouldMoveLeftFoot) {
                     // Play popping noise
@@ -217,21 +223,15 @@ public:
         mat4 t = Transpose(m);
 
         return Translate(torso->getPosition()) * t * Scale(0.8, 0.8, 0.8);
-        //return Translate(controllerPosition) * Scale(0.4, 0.4, 0.4);
     }
 
-    vec3 getControllerPosition() {
-        return controllerPosition;
-    }
-
-    vec3 getLookDirection() {
-        return lookDirection;
-    }
+    vec3 getControllerPosition() { return controllerPosition; }
+    vec3 getLookDirection() { return lookDirection; }
 
 private:
     const float CONTROLLER_RADIUS = 0.5f;
-    const float MAX_SPEED = 0.15f;
-    const float MOVE_FORCE = 0.015f;
+    const float MAX_SPEED = 0.2f;
+    const float MOVE_FORCE = 0.02f;
     const float MOVE_FRICTION = 0.08f;
     const float STRIDE_LENGTH = 2.5f;
     const float STRIDE_LENGTH_MIN = 0.1f;

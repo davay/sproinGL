@@ -11,6 +11,9 @@ public:
     PhysicsManager() {
     }
 
+    /**
+     * Update physics objects.
+     */
     void update(float timeDelta) {
         // Collide particles with each other
         for (int i = 0; i < particles.size(); i++) {
@@ -21,7 +24,7 @@ public:
                 vec3 delta = p2->getPosition() - p1->getPosition();
 
                 if (length(delta) < p1->getRadius() + p2->getRadius()) {
-                    float bounceStrength = 0.005f / sqrt(length(delta));
+                    float bounceStrength = 0.004f / sqrt(length(delta));
                     vec3 bounceForce = -delta * bounceStrength;
                     p1->applyForce(bounceForce);
                     p2->applyForce(-bounceForce);

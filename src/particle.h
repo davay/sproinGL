@@ -21,14 +21,14 @@ public:
         : Particle(position, vec3(0, 0, 0), mass, radius, damping, false) { }
 
     Particle(vec3 position, float mass, float radius)
-        : Particle(position, vec3(0, 0, 0), mass, radius, 0.9f, false) { }
+        : Particle(position, vec3(0, 0, 0), mass, radius, DEFAULT_DAMPING, false) { }
 
     void applyForce(vec3 force) {
         netForce += force;
     }
 
     void update(double timeDelta) {
-        vec3 acceleration = isForceExempt ? 0.0f : netForce * (1.0f / mass);
+        vec3 acceleration = isForceExempt ? 0.0f : netForce / mass;
         velocity += acceleration;
         position += velocity;
 
@@ -40,7 +40,7 @@ public:
             velocity.z *= damping;
         }
 
-        // Reset net force for the next frame
+        // Reset net force
         netForce.x = netForce.y = netForce.z = 0.0f;
     }
 
@@ -65,6 +65,8 @@ public:
     float getRadius() { return radius; }
 
 private:
+    const float DEFAULT_DAMPING = 0.9f;
+
     vec3 position;
     vec3 velocity;
     vec3 netForce;

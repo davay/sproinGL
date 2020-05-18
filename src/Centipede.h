@@ -12,36 +12,37 @@ public:
         controllerDirection = vec3(0, 0, 1);
         controllerVelocity = vec3(0.1, 0, 0);
 
-        head = new Particle(vec3(controllerPosition), 1, 1, 0.99);
+        head = new Particle(vec3(controllerPosition), vec3(0, 0, 0), 1, 1, 0.99, true);
         pm->addParticle(head);
 
         Particle *prevMadeParticle = head;
-        for (int i = 1; i < numBodySegments; i++) {
+        for (int i = 1; i < NUM_BODY_SEGMENTS; i++) {
             Particle *nextParticle = new Particle(vec3(controllerPosition - controllerDirection * 2.5 * i), 1, 1, 0.99);
             pm->addParticle(nextParticle);
-            pm->addSpring(new Spring(prevMadeParticle, nextParticle, 2.5, 0.1, 0.01));
+            pm->addSpring(new Spring(prevMadeParticle, nextParticle, 2.5, 0.01, 0.001));
             prevMadeParticle = nextParticle;
         }
     }
 
-    void update(double timeDelta) {
+    /**
+     * Always follow the player.
+     */
+    void update(double timeDelta, Player *player) {
+        vec3 playerPosition = player->getControllerPosition();
+        vec3 targetPosition = vec3(playerPosition.x, 1, playerPosition.z);
+        vec3 acceleration = normalize(targetPosition - controllerPosition) * 0.05f;
+
+        controllerVelocity = acceleration;
         controllerPosition += controllerVelocity;
         head->setPosition(controllerPosition);
     }
 
-    /*
-    void update(double timeDelta, Game *game) {
-        vec3 playerPosition = game->getPlayer()->getControllerPosition();
-        vec3 force = normalize(playerPosition - head->getPosition()) * 0.01f;
-        head->applyForce(force);
-    }
-    */
-
 private:
+    const int NUM_BODY_SEGMENTS = 6;
+
     vec3 controllerPosition;
     vec3 controllerDirection;
     vec3 controllerVelocity;
-    int numBodySegments = 8;
 
     Particle* head;
 };
