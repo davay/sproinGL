@@ -1,8 +1,14 @@
+#ifndef GAME_H
+#define GAME_H
+
+#include "GameCamera.h"
+#include "Player.h"
 #include "Model.h"
 #include "Particle.h"
-#include "Spring.h"
 #include "PhysicsManager.h"
-#include "Player.h"
+#include "Spring.h"
+
+#include "Centipede.h"
 
 #include "Camera.h"
 #include "Draw.h"
@@ -17,8 +23,10 @@
 class Game {
 public:
     Game(GLFWwindow *window, unsigned int screenWidth, int screenHeight)
-        : camera(screenWidth, screenHeight, vec3(20.0f, -5.0f, 0.0f), vec3(0.0f, -2.0f, -40.0f), 30)
-        , player(vec3(0, 0, 0), &pm)
+        : camera(screenWidth, screenHeight, vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, -2.0f, -40.0f), 30)
+        , gameCamera(vec3(0, 1, 10))
+        , player(&pm, vec3(0, 0, 0))
+        , centipede(&pm, vec3(5, 1, 0))
         , sphereModel(vec3(1.0f, 0.5f, 0.2f))
         , cubeModel(vec3(1.0f, 0.3f, 0.4f))
         , cylinderModel(vec3(1.0f, 1.0f, 1.0f))
@@ -36,13 +44,18 @@ public:
         pm.update(timeDelta);
 
         // Update player
-        player.keyboardInput(window, &camera);
+        player.input(window, &camera);
         player.update(timeDelta, &camera);
+
+        centipede.update(timeDelta);
+
+        gameCamera.update(timeDelta, &player);
     }
 
     void draw(int shaderProgram) {
         glUseProgram(shaderProgram);
-        SetUniform(shaderProgram, "cameraView", camera.fullview);
+        //SetUniform(shaderProgram, "cameraView", camera.fullview);
+        SetUniform(shaderProgram, "cameraView", gameCamera.getView());
 
         // Draw arena
         cubeModel.setXform(Translate(0.0f, -10.0f, 0.0f));
@@ -68,11 +81,23 @@ public:
         monkeyModel.draw(shaderProgram);
     }
 
+    static void mouseMoveCallback(GLFWwindow *window, double mouseX, double mouseY) {
+        //gameCamera.rotate(mouseX, mouseY);
+    }
+
+    Player* getPlayer() {
+        return &player;
+    }
+
 private:
     GLFWwindow *window;
     PhysicsManager pm;
     Camera camera;
+    GameCamera gameCamera;
     Player player;
+    Centipede centipede;
 
     Model sphereModel, cubeModel, cylinderModel, monkeyModel;
 };
+
+#endif

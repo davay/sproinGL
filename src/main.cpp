@@ -40,9 +40,9 @@ void MouseButton(GLFWwindow *w, int butn, int action, int mods) {
         camera.MouseUp();
 }
 
-void MouseMove(GLFWwindow *w, double x, double y) {
+void MouseMove(GLFWwindow *window, double x, double y) {
     //if (glfwGetMouseButton(w, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-        camera.MouseDrag((int) x, (int) y, Shift(w));
+    camera.MouseDrag((int) x, (int) y, Shift(w));
 }
 
 void resize(GLFWwindow *window, int width, int height) {
@@ -65,23 +65,22 @@ int main() {
     GLFWwindow *window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "SproinGL", NULL, NULL);
 
     glfwMakeContextCurrent(window);
-    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     //glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // glad: load all OpenGL function pointers
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
     // Build and compile shader program
+    Game game(window, SCREEN_WIDTH, SCREEN_HEIGHT);
     int shaderProgram = LinkProgramViaFile("./src/shaders/vertex_shader.txt", "./src/shaders/fragment_shader.txt");
 
     // Set callbacks
+    glfwSetCursorPosCallback(window, game.mouseMoveCallback);
     /*
-    glfwSetCursorPosCallback(window, MouseMove);
     glfwSetMouseButtonCallback(window, MouseButton);
     glfwSetWindowSizeCallback(window, resize);
     */
-
-    Game game(window, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     double lastTime = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {

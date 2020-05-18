@@ -9,17 +9,19 @@
 
 class Particle {
 public:
-    Particle(vec3 position, vec3 velocity, float mass, float radius, float damping, bool isForceExempt) {
-        this->position = position;
-        this->velocity = velocity;
-        this->mass = mass;
-        this->radius = radius;
-        this->damping = damping;
-        this->isForceExempt = isForceExempt;
-    }
+    Particle(vec3 position, vec3 velocity, float mass, float radius, float damping, bool isForceExempt)
+        : position(position)
+        , velocity(velocity)
+        , mass(mass)
+        , radius(radius)
+        , damping(damping)
+        , isForceExempt(isForceExempt) { }
 
-    Particle(vec3 position, float mass, float radius) :
-        Particle(position, vec3(0, 0, 0), mass, radius, 0.9f, false) { }
+    Particle(vec3 position, float mass, float radius, float damping)
+        : Particle(position, vec3(0, 0, 0), mass, radius, damping, false) { }
+
+    Particle(vec3 position, float mass, float radius)
+        : Particle(position, vec3(0, 0, 0), mass, radius, 0.9f, false) { }
 
     void applyForce(vec3 force) {
         netForce += force;

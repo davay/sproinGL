@@ -62,20 +62,6 @@ public:
         vec3 middle = (p1Position + p2Position) / 2.0f;
         vec3 up = (dot(positionDelta, up) > 0.00001f) ? vec3(0, 1, 0) : vec3(0, 0, 1);
 
-        /*
-        // https://stackoverflow.com/questions/26017467/rotate-object-to-look-at-another-object-in-3-dimensions
-        vec3 zaxis = normalize(positionDelta);
-        vec3 xaxis = normalize(cross(up, zaxis));
-        vec3 yaxis = cross(zaxis, xaxis);
-
-        mat4 m = mat4(
-            vec4(xaxis.x, yaxis.x, zaxis.x, 0),
-            vec4(xaxis.y, yaxis.y, zaxis.y, 0),
-            vec4(xaxis.z, yaxis.z, zaxis.z, 0),
-            vec4(0,       0,       0,       1)
-        );
-        */
-
         vec3 z = normalize(positionDelta);
         vec3 x = normalize(cross(up, z));
         vec3 y = normalize(cross(z, x));
@@ -87,9 +73,9 @@ public:
             vec4(0, 0, 0, 1)
         );
 
-        mat4 t = Transpose(m);
+        mat4 rotate = Transpose(m);
 
-        return Translate(middle) * t * Scale(0.5, 0.5, length(positionDelta));
+        return Translate(middle) * rotate * Scale(0.5, 0.5, length(positionDelta));
     }
 
 private:

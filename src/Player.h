@@ -10,12 +10,15 @@
 #include <glad.h>
 #include <GLFW/glfw3.h>
 
+#include "math.h"
+
 class Player {
 public:
-    Player(vec3 controllerPosition, PhysicsManager* pm) {
+    Player(PhysicsManager* pm, vec3 controllerPosition) {
         this->controllerPosition = controllerPosition;
         controllerVelocity = vec3(0, 0, 0);
         controllerDirection = vec3(0, 0, 1);
+        lookDirection = vec3(0, 0, 1);
         tailPosition = controllerPosition - vec3(0, 0, 1);
         leftFootTarget = controllerPosition + vec3(FOOT_STRADDLE_OFFSET, 0, 0);
         rightFootTarget = controllerPosition + vec3(-FOOT_STRADDLE_OFFSET, 0, 0);
@@ -45,32 +48,29 @@ public:
         pm->addSpring(new Spring(leftHand, rightHand, 5, 0.004, 0.001), false);
     }
 
-    void keyboardInput(GLFWwindow *window, Camera *camera) {
+    void input(GLFWwindow *window, Camera *camera) {
         mat4 cameraAngle = camera->GetRotate();
         isMoving = false;
 
+        // Keyboard input for movement
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-            vec4 d = cameraAngle * vec4(0, 0, 1, 1);
-            vec3 a = normalize(vec3(d.x, 0, -d.z));
-            controllerVelocity += a * MOVE_FORCE;
+            vec3 forward = normalize(vec3(lookDirection.x, 0, lookDirection.z));
+            controllerVelocity += forward * MOVE_FORCE;
             isMoving = true;
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-            vec4 d = cameraAngle * vec4(0, 0, -1, 1);
-            vec3 a = normalize(vec3(d.x, 0, -d.z));
-            controllerVelocity += a * MOVE_FORCE;
+            vec3 backward = normalize(vec3(-lookDirection.x, 0, -lookDirection.z));
+            controllerVelocity += backward * MOVE_FORCE;
             isMoving = true;
         }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-            vec4 d = cameraAngle * vec4(-1, 0, 0, 1);
-            vec3 a = normalize(vec3(d.x, 0, -d.z));
-            controllerVelocity += a * MOVE_FORCE;
+            vec3 left = normalize(cross(vec3(0, 1, 0), lookDirection));
+            controllerVelocity += left * MOVE_FORCE;
             isMoving = true;
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-            vec4 d = cameraAngle * vec4(1, 0, 0, 1);
-            vec3 a = normalize(vec3(d.x, 0, -d.z));
-            controllerVelocity += a * MOVE_FORCE;
+            vec3 right = normalize(cross(lookDirection, vec3(0, 1, 0)));
+            controllerVelocity += right * MOVE_FORCE;
             isMoving = true;
         }
         if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
@@ -78,13 +78,30 @@ public:
                 controllerVelocity.y = 0.3;
                 base->setVelocity(controllerVelocity);
                 torso->setVelocity(controllerVelocity);
-                //leftFoot->applyForce(vec3(0.01, 0.02, 0.02));
-                //rightFoot->applyForce(vec3(0.01, 0.02, -0.02));
-                //leftFoot->setVelocity(controllerVelocity * 20);
-                //rightFoot->setVelocity(controllerVelocity * 20);
                 isOnGround = false;
             }
         }
+
+        // Mouse input for look direction
+        double mouseX, mouseY;
+        glfwGetCursorPos(window, &mouseX, &mouseY);
+
+        // TODO: Clean this up
+        float xoffset = mouseX - lastMouseX;
+        float yoffset = lastMouseY  - mouseY;
+        lastMouseX = mouseX;
+        lastMouseY = mouseY;
+        const float sensitivity = 0.005f;
+        xoffset *= sensitivity;
+        yoffset *= sensitivity;
+        yaw   += xoffset;
+        pitch += yoffset;
+        vec3 direction = vec3(
+            cos(yaw) * cos(pitch),
+            sin(pitch),
+            sin(yaw) * cos(pitch)
+        );
+        lookDirection = normalize(direction);
     }
 
     void update(double timeDelta, Camera* camera) {
@@ -193,7 +210,7 @@ public:
 
     mat4 getXform() {
         vec3 up(0, 1, 0);
-        vec3 z = normalize(bodyDirection);
+        vec3 z = normalize(lookDirection);
         vec3 x = normalize(cross(up, z));
         vec3 y = normalize(cross(z, x));
 
@@ -213,6 +230,10 @@ public:
         return controllerPosition;
     }
 
+    vec3 getLookDirection() {
+        return lookDirection;
+    }
+
 private:
     const float CONTROLLER_RADIUS = 0.5f;
     const float MAX_SPEED = 0.15f;
@@ -226,12 +247,15 @@ private:
     const float HAND_RADIUS = 0.3f;
 
     const float HEIGHT = 2.0f;
-    const float ARM_LENGTH = 1.0f;
+    const float ARM_LENGTH = 1.3f;
     const float LEG_LENGTH = 2.0f;
 
     vec3 controllerPosition;
     vec3 controllerDirection;
     vec3 controllerVelocity;
+    float pitch, yaw;
+    vec3 lookDirection;
+    double lastMouseX, lastMouseY;
     bool isMoving, isOnGround;
 
     vec3 tailPosition;
