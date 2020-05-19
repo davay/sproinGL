@@ -1,8 +1,8 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "Particle.h"
-#include "Spring.h"
+#include "particle.h"
+#include "spring.h"
 
 #include "Camera.h"
 #include "VecMat.h"

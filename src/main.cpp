@@ -1,9 +1,9 @@
-#include "Model.h"
-#include "Particle.h"
-#include "Spring.h"
-#include "PhysicsManager.h"
-#include "Player.h"
-#include "Game.h"
+#include "model.h"
+#include "particle.h"
+#include "spring.h"
+#include "physics_manager.h"
+#include "player.h"
+#include "game.h"
 
 #include "Camera.h"
 #include "Draw.h"
@@ -21,8 +21,8 @@
 #include <stdlib.h>
 
 
-const unsigned int SCREEN_WIDTH = 640;
-const unsigned int SCREEN_HEIGHT = 400;
+const unsigned int SCREEN_WIDTH = 800;
+const unsigned int SCREEN_HEIGHT = 600;
 
 /*
 bool Shift(GLFWwindow *w) {

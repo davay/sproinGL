@@ -1,7 +1,7 @@
 #ifndef GAME_CAMERA_H
 #define GAME_CAMERA_H
 
-#include "Player.h"
+#include "player.h"
 
 #include "VecMat.h"
 

@@ -1,14 +1,14 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include "GameCamera.h"
-#include "Player.h"
-#include "Model.h"
-#include "Particle.h"
-#include "PhysicsManager.h"
-#include "Spring.h"
+#include "game_camera.h"
+#include "player.h"
+#include "model.h"
+#include "particle.h"
+#include "physics_manager.h"
+#include "spring.h"
 
-#include "Centipede.h"
+#include "centipede.h"
 
 #include "Camera.h"
 #include "Draw.h"

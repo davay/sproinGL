@@ -1,8 +1,8 @@
 #ifndef PHYSICS_MANAGER_H
 #define PHYSICS_MANAGER_H
 
-#include "Particle.h"
-#include "Spring.h"
+#include "particle.h"
+#include "spring.h"
 
 #include <stdlib.h>
 
