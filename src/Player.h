@@ -100,15 +100,15 @@ public:
         yaw   += xOffset;
         pitch += yOffset;
 
-        if (pitch > -0.1) pitch = -0.1;
-        if (pitch < -0.9) pitch = -0.9;
+        if (pitch > -0.05) pitch = -0.05;
+        if (pitch < -1.1) pitch = -1.1;
 
         vec3 direction = vec3(
             cos(yaw) * cos(pitch),
             sin(pitch),
             sin(yaw) * cos(pitch)
         );
-        
+
         lookDirection = normalize(direction);
     }
 
