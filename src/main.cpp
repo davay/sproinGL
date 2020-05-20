@@ -21,8 +21,8 @@
 #include <stdlib.h>
 
 
-const unsigned int SCREEN_WIDTH = 800;
-const unsigned int SCREEN_HEIGHT = 600;
+const unsigned int SCREEN_WIDTH = 320;
+const unsigned int SCREEN_HEIGHT = 200;
 
 /*
 bool Shift(GLFWwindow *w) {
@@ -61,8 +61,15 @@ int main() {
     glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GL_FALSE);
 #endif
 
+    const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+
+
+
+    int window_width = mode->width;
+    int window_height = mode->height;
+
     // glfw window creation
-    GLFWwindow *window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "SproinGL", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(window_width, window_height, "SproinGL", glfwGetPrimaryMonitor(), NULL);
 
     glfwMakeContextCurrent(window);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
