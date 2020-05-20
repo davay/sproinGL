@@ -3,18 +3,19 @@
 
 #include "particle.h"
 #include "spring.h"
+#include "game_object.h"
 
-#include "Camera.h"
 #include "VecMat.h"
-
+#include <typeinfo>
 #include <glad.h>
 #include <GLFW/glfw3.h>
 
 #include "math.h"
 
-class Player {
+class Player: protected GameObject {
 public:
     Player(PhysicsManager* pm, vec3 controllerPosition) {
+        objectId = PLAYER;
         this->controllerPosition = controllerPosition;
         controllerVelocity = vec3(0, 0, 0);
         controllerDirection = vec3(0, 0, 1);
@@ -27,12 +28,12 @@ public:
         stride = 0;
 
         // Define physics components
-        base = new Particle(controllerPosition, 1, FOOT_RADIUS);
-        torso = new Particle(controllerPosition + vec3(0, HEIGHT, 0), 1, 0.5);
-        leftHand = new Particle(controllerPosition + vec3(ARM_LENGTH, HEIGHT, 0), 0.5, HAND_RADIUS);
-        rightHand = new Particle(controllerPosition + vec3(-ARM_LENGTH, HEIGHT, 0), 0.5, HAND_RADIUS);
-        leftFoot = new Particle(leftFootTarget, 0.1, FOOT_RADIUS);
-        rightFoot = new Particle(rightFootTarget, 0.1, FOOT_RADIUS);
+        base = new Particle(this, objectId, controllerPosition, 1, FOOT_RADIUS);
+        torso = new Particle(this, objectId, controllerPosition + vec3(0, HEIGHT, 0), 1, 1);
+        leftHand = new Particle(this, objectId, controllerPosition + vec3(ARM_LENGTH, HEIGHT, 0), 0.5, HAND_RADIUS);
+        rightHand = new Particle(this, objectId, controllerPosition + vec3(-ARM_LENGTH, HEIGHT, 0), 0.5, HAND_RADIUS);
+        leftFoot = new Particle(this, objectId, leftFootTarget, 0.1, FOOT_RADIUS);
+        rightFoot = new Particle(this, objectId, rightFootTarget, 0.1, FOOT_RADIUS);
 
         pm->addParticle(base, false);
         pm->addParticle(torso, false);
@@ -112,7 +113,7 @@ public:
         lookDirection = normalize(direction);
     }
 
-    void update(double timeDelta) {
+    void update(double timeDelta, void*) override {
         // Apply gravity
         controllerVelocity += vec3(0, -0.01, 0);
 
@@ -206,6 +207,12 @@ public:
         // Force the hands down so they don't float up like a weirdo
         leftHand->applyForce(vec3(0, -0.005, 0));
         rightHand->applyForce(vec3(0, -0.005, 0));
+    }
+
+    void onCollision(void* other) override {
+        Particle* particle = static_cast<Particle*>(other);
+        std::cout << "player: " << objectId << std::endl;
+        std::cout << "other: " << particle->getObjectId() << std::endl;
     }
 
     mat4 getXform() {

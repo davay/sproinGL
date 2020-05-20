@@ -1,6 +1,7 @@
 #ifndef PARTICLE_H
 #define PARTICLE_H
 
+#include "game_object.h"
 #include "VecMat.h"
 
 #include <iostream>
@@ -9,19 +10,15 @@
 
 class Particle {
 public:
-    Particle(vec3 position, vec3 velocity, float mass, float radius, float damping, bool isForceExempt)
-        : position(position)
-        , velocity(velocity)
+    Particle(GameObject* owner, int objectId, vec3 position, float mass, float radius, float damping=DEFAULT_DAMPING, bool isForceExempt=false, vec3 velocity=vec3(0,0,0))
+        : owner(owner)
+        , objectId(objectId)
+        , position(position)
         , mass(mass)
         , radius(radius)
         , damping(damping)
-        , isForceExempt(isForceExempt) { }
-
-    Particle(vec3 position, float mass, float radius, float damping)
-        : Particle(position, vec3(0, 0, 0), mass, radius, damping, false) { }
-
-    Particle(vec3 position, float mass, float radius)
-        : Particle(position, vec3(0, 0, 0), mass, radius, DEFAULT_DAMPING, false) { }
+        , isForceExempt(isForceExempt) 
+        , velocity(velocity) { }
 
     void applyForce(vec3 force) {
         netForce += force;
@@ -44,6 +41,10 @@ public:
         netForce.x = netForce.y = netForce.z = 0.0f;
     }
 
+    void onCollision(Particle* other) {
+        owner->onCollision(other);
+    }
+
     void setPosition(vec3 position) {
         this->position = position;
     }
@@ -56,8 +57,13 @@ public:
         this->isForceExempt = isForceExempt;
     }
 
+
     mat4 getXform() {
         return Translate(position) * Scale(radius, radius, radius);
+    }
+
+    int getObjectId() {
+        return objectId;
     }
 
     vec3 getPosition() { return position; }
@@ -65,7 +71,7 @@ public:
     float getRadius() { return radius; }
 
 private:
-    const float DEFAULT_DAMPING = 0.9f;
+    static constexpr float DEFAULT_DAMPING = 0.9f;
 
     vec3 position;
     vec3 velocity;
@@ -74,6 +80,10 @@ private:
     float radius;
     float damping;
     bool isForceExempt;
+    int objectId;
+    GameObject* owner;
+  
 };
+
 
 #endif
