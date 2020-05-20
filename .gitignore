@@ -1,5 +1,6 @@
 Makefile
 include/glm/doc
+.vscode/
 *.a
 sproinGL
 CMakeCache.txt

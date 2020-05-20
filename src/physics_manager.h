@@ -28,6 +28,8 @@ public:
                     vec3 bounceForce = -delta * bounceStrength;
                     p1->applyForce(bounceForce);
                     p2->applyForce(-bounceForce);
+                    p1->onCollision(p2);
+                    p2->onCollision(p1);
                 }
             }
         }

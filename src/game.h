@@ -44,7 +44,7 @@ public:
 
         // Update entities
         player.input(window);
-        player.update(timeDelta);
+        player.update(timeDelta, nullptr);
         centipede.update(timeDelta, &player);
 
         gameCamera.update(timeDelta, &player);

@@ -1,23 +1,25 @@
 #ifndef CENTIPEDE_H
 #define CENTIPEDE_H
 
+#include "game_object.h"
 #include "VecMat.h"
 
 #include <stdlib.h>
 
-class Centipede {
+class Centipede: protected GameObject {
 public:
     Centipede(PhysicsManager *pm, vec3 controllerPosition) {
+        objectId = CENTIPEDE;
         this->controllerPosition = controllerPosition;
         controllerDirection = vec3(0, 0, 1);
         controllerVelocity = vec3(0.1, 0, 0);
 
-        head = new Particle(vec3(controllerPosition), vec3(0, 0, 0), 1, 1, 0.99, true);
+        head = new Particle(this, objectId, vec3(controllerPosition), 1, 1, 0.99, true);
         pm->addParticle(head);
 
         Particle *prevMadeParticle = head;
         for (int i = 1; i < NUM_BODY_SEGMENTS; i++) {
-            Particle *nextParticle = new Particle(vec3(controllerPosition - controllerDirection * 2.5 * i), 1, 1, 0.99);
+            Particle *nextParticle = new Particle(this, objectId, vec3(controllerPosition - controllerDirection * 2.5 * i), 1, 1, 0.99);
             pm->addParticle(nextParticle);
             pm->addSpring(new Spring(prevMadeParticle, nextParticle, 2.5, 0.01, 0.001));
             prevMadeParticle = nextParticle;
@@ -27,7 +29,8 @@ public:
     /**
      * Always follow the player.
      */
-    void update(double timeDelta, Player *player) {
+    void update(double timeDelta, void* playerPointer) override {
+        Player* player = static_cast<Player*>(playerPointer);
         vec3 playerPosition = player->getControllerPosition();
         vec3 targetPosition = vec3(playerPosition.x, 1, playerPosition.z);
         vec3 acceleration = normalize(targetPosition - controllerPosition) * 0.05f;
@@ -35,6 +38,15 @@ public:
         controllerVelocity = acceleration;
         controllerPosition += controllerVelocity;
         head->setPosition(controllerPosition);
+    }
+
+    void onCollision(void* other) override {
+        Particle* particle = static_cast<Particle*>(other);
+        std::cout << "player: " << objectId << std::endl;
+        std::cout << "other: " << particle->getObjectId() << std::endl;
+        // std::cout << "Centipede: " << ownerType << std::endl;
+        // std::cout << particle->getOwnerType() << std::endl;
+
     }
 
 private:
