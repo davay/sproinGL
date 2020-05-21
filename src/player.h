@@ -16,6 +16,7 @@ class Player: protected GameObject {
 public:
     Player(PhysicsManager* pm, vec3 controllerPosition) {
         objectId = PLAYER;
+
         this->controllerPosition = controllerPosition;
         controllerVelocity = vec3(0, 0, 0);
         controllerDirection = vec3(0, 0, 1);
@@ -27,9 +28,11 @@ public:
         shouldMoveLeftFoot = true;
         stride = 0;
 
+        health = MAX_HEALTH;
+
         // Define physics components
         base = new Particle(this, objectId, controllerPosition, 1, FOOT_RADIUS);
-        torso = new Particle(this, objectId, controllerPosition + vec3(0, HEIGHT, 0), 1, 1);
+        torso = new Particle(this, objectId, controllerPosition + vec3(0, HEIGHT, 0), 1, 0.5);
         leftHand = new Particle(this, objectId, controllerPosition + vec3(ARM_LENGTH, HEIGHT, 0), 0.5, HAND_RADIUS);
         rightHand = new Particle(this, objectId, controllerPosition + vec3(-ARM_LENGTH, HEIGHT, 0), 0.5, HAND_RADIUS);
         leftFoot = new Particle(this, objectId, leftFootTarget, 0.1, FOOT_RADIUS);
@@ -210,9 +213,19 @@ public:
     }
 
     void onCollision(void* other) override {
-        Particle* particle = static_cast<Particle*>(other);
-        std::cout << "player: " << objectId << std::endl;
-        std::cout << "other: " << particle->getObjectId() << std::endl;
+        Particle* otherParticle = static_cast<Particle*>(other);
+
+        int otherObjectId = otherParticle->getObjectId();
+
+        if (otherObjectId == 1) {
+            vec3 responseVelocity = (torso->getPosition() - otherParticle->getPosition()) * 0.1f;
+            responseVelocity.y = 0.2f;
+            controllerVelocity = responseVelocity;
+            base->setVelocity(responseVelocity);
+            torso->setVelocity(responseVelocity);
+            isOnGround = false;
+            //health -= 5;
+        }
     }
 
     mat4 getXform() {
@@ -251,6 +264,8 @@ private:
     const float ARM_LENGTH = 1.2f;
     const float LEG_LENGTH = 2.0f;
 
+    const int MAX_HEALTH = 100;
+
     vec3 controllerPosition;
     vec3 controllerDirection;
     vec3 controllerVelocity;
@@ -259,6 +274,7 @@ private:
     vec3 lookDirection;
     double lastMouseX, lastMouseY;
     bool isMoving, isOnGround;
+    int health;
 
     vec3 tailPosition;
     vec3 bodyDirection;

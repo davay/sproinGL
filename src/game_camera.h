@@ -9,10 +9,10 @@
 
 class GameCamera {
 public:
-    GameCamera(vec3 position) {
+    GameCamera(vec3 position, float aspectRatio) {
         this->position = vec3(0, 5, 20);
         up = vec3(0, 1, 0);
-        persp = Perspective(45, 640.0f / 400.0f, 1, 100);
+        persp = Perspective(45, aspectRatio, 1, 100);
     }
 
     void update(double timeDelta, Player* player) {

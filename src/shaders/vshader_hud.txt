@@ -1,0 +1,15 @@
+#version 410 core
+
+layout (location = 0) in vec3 point;
+
+out vec3 vPoint;
+out vec3 vColor;
+
+uniform mat4 offsetTrans;
+uniform vec3 geomColor;
+
+void main() {
+    vPoint = (modelTrans * vec4(point, 1)).xyz;
+    vColor = modelColor;
+    gl_Position = offsetTrans * vec4(point, 1.0);
+}

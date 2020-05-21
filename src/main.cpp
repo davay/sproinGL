@@ -21,8 +21,8 @@
 #include <stdlib.h>
 
 
-const unsigned int SCREEN_WIDTH = 320;
-const unsigned int SCREEN_HEIGHT = 200;
+const unsigned int SCREEN_WIDTH = 640;
+const unsigned int SCREEN_HEIGHT = 400;
 
 /*
 bool Shift(GLFWwindow *w) {
@@ -63,13 +63,11 @@ int main() {
 
     const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
-
-
-    int window_width = mode->width;
-    int window_height = mode->height;
+    int monitorWidth = mode->width;
+    int monitorHeight = mode->height;
 
     // glfw window creation
-    GLFWwindow *window = glfwCreateWindow(window_width, window_height, "SproinGL", glfwGetPrimaryMonitor(), NULL);
+    GLFWwindow *window = glfwCreateWindow(monitorWidth, monitorHeight, "SproinGL", glfwGetPrimaryMonitor(), NULL);
 
     glfwMakeContextCurrent(window);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -79,9 +77,13 @@ int main() {
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
     // Build and compile shader program
-    Game game(window, SCREEN_WIDTH, SCREEN_HEIGHT);
     int shaderProgram = LinkProgramViaFile("./src/shaders/vertex_shader.txt", "./src/shaders/fragment_shader.txt");
+    int shaderProgramHUD = LinkProgramViaFile("./src/shaders/vshader_hud.txt", "./src/shaders/fshader_hud.txt");
 
+    // Initialize game
+    Game game(window, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    // Game loop
     double lastTime = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {
         double currentTime = glfwGetTime();
@@ -98,7 +100,7 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
 
-        game.draw(shaderProgram);
+        game.draw(shaderProgram, shaderProgramHUD);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

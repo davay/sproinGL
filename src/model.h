@@ -14,7 +14,7 @@ public:
         this->color = color;
     };
 
-    bool read(const char *meshName, const char *textureName) {
+    bool read(const char *meshName) {
         if (!ReadAsciiObj(meshName, points, triangles, &normals, &uvs)) {
             printf("can't read %s\n", meshName);
             return false;

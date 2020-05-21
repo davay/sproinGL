@@ -17,7 +17,7 @@ public:
         , mass(mass)
         , radius(radius)
         , damping(damping)
-        , isForceExempt(isForceExempt) 
+        , isForceExempt(isForceExempt)
         , velocity(velocity) { }
 
     void applyForce(vec3 force) {
@@ -30,11 +30,16 @@ public:
         position += velocity;
 
         // Collide with the ground
-        if (position.y - radius < 0.0f) {
-            position.y = 0.0 + radius;
-            velocity.x *= damping;
-            velocity.y *= -damping;
-            velocity.z *= damping;
+        if (position.x > -25 && position.x < 25) {
+            if (position.z > -25 && position.z < 25) {
+                if (position.y - radius < 0.0f) {
+                    position.y = 0.0 + radius;
+                    velocity.x *= damping;
+                    velocity.y *= -damping;
+                    velocity.z *= damping;
+
+                }
+            }
         }
 
         // Reset net force
@@ -62,13 +67,10 @@ public:
         return Translate(position) * Scale(radius, radius, radius);
     }
 
-    int getObjectId() {
-        return objectId;
-    }
-
     vec3 getPosition() { return position; }
     vec3 getVelocity() { return velocity; }
     float getRadius() { return radius; }
+    int getObjectId() { return objectId; }
 
 private:
     static constexpr float DEFAULT_DAMPING = 0.9f;
@@ -79,10 +81,11 @@ private:
     float mass;
     float radius;
     float damping;
+    float frictionStrength;
     bool isForceExempt;
     int objectId;
     GameObject* owner;
-  
+
 };
 
 

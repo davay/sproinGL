@@ -23,7 +23,7 @@
 class Game {
 public:
     Game(GLFWwindow *window, unsigned int screenWidth, int screenHeight)
-        : gameCamera(vec3(0, 1, 10))
+        : gameCamera(vec3(0, 1, 10), (float) screenWidth / screenHeight)
         , player(&pm, vec3(0, 0, 0))
         , centipede(&pm, vec3(5, 1, 0))
         , sphereModel(vec3(1.0f, 0.5f, 0.2f))
@@ -32,10 +32,10 @@ public:
         , monkeyModel(vec3(0.3f, 0.7f, 0.0f))
     {
         this->window = window;
-        sphereModel.read("./assets/sphere.obj", "‎⁨.⁩/assets/lily.tga⁩");
-        cubeModel.read("./assets/cube.obj", "‎⁨.⁩/assets/lily.tga⁩");
-        cylinderModel.read("./assets/cylinder.obj", "‎⁨.⁩/assets/lily.tga⁩");
-        monkeyModel.read("./assets/monkey.obj", "‎⁨.⁩/assets/lily.tga⁩");
+        sphereModel.read("./assets/sphere.obj");
+        cubeModel.read("./assets/cube.obj");
+        cylinderModel.read("./assets/cylinder.obj");
+        monkeyModel.read("./assets/monkey.obj");
     }
 
     void update(double timeDelta) {
@@ -50,7 +50,7 @@ public:
         gameCamera.update(timeDelta, &player);
     }
 
-    void draw(int shaderProgram) {
+    void draw(int shaderProgram, int shaderProgramHUD) {
         glUseProgram(shaderProgram);
         SetUniform(shaderProgram, "cameraView", gameCamera.getView());
 
