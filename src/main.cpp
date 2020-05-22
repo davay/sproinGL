@@ -20,10 +20,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
-const unsigned int SCREEN_WIDTH = 640;
-const unsigned int SCREEN_HEIGHT = 400;
-
 /*
 bool Shift(GLFWwindow *w) {
     return glfwGetKey(w, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
@@ -62,7 +58,6 @@ int main() {
 #endif
 
     const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-
     int monitorWidth = mode->width;
     int monitorHeight = mode->height;
 
@@ -70,7 +65,7 @@ int main() {
     GLFWwindow *window = glfwCreateWindow(monitorWidth, monitorHeight, "SproinGL", glfwGetPrimaryMonitor(), NULL);
 
     glfwMakeContextCurrent(window);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     //glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // glad: load all OpenGL function pointers
@@ -81,7 +76,7 @@ int main() {
     int shaderProgramHUD = LinkProgramViaFile("./src/shaders/vshader_hud.txt", "./src/shaders/fshader_hud.txt");
 
     // Initialize game
-    Game game(window, SCREEN_WIDTH, SCREEN_HEIGHT);
+    Game game(window, monitorWidth, monitorHeight);
 
     // Game loop
     double lastTime = glfwGetTime();

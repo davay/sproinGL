@@ -26,8 +26,6 @@ public:
             pm->addSpring(new Spring(prevMadeParticle, nextParticle, 2.5, 0.01, 0.001));
             prevMadeParticle = nextParticle;
         }
-
-
     }
 
     /**
@@ -37,19 +35,20 @@ public:
         Player* player = static_cast<Player*>(playerPointer);
         vec3 playerPosition = player->getControllerPosition();
         vec3 targetPosition = vec3(playerPosition.x, 1, playerPosition.z);
-        vec3 force = normalize(targetPosition - head->getPosition()) * 0.01f;
+        vec3 force = normalize(targetPosition - head->getPosition()) * 0.010f;
 
         head->applyForce(force);
     }
 
-    void onCollision(void* other) override {
-        Particle* otherParticle = static_cast<Particle*>(other);
+    void collideWith(void* thisCollider, void* otherCollider) override {
+        Particle* thisParticle = static_cast<Particle*>(thisCollider);
+        Particle* otherParticle = static_cast<Particle*>(otherCollider);
+
         int otherObjectId = otherParticle->getObjectId();
 
         if (otherObjectId == 0) {
-            vec3 responseForce = (head->getPosition() - otherParticle->getPosition()) * 0.1f;
-            responseForce.y = 0.1f;
-            head->applyForce(responseForce);
+            vec3 responseForce = (thisParticle->getPosition() - otherParticle->getPosition()) * 0.05f;
+            thisParticle->applyForce(responseForce);
             //health -= 5
         }
     }
@@ -62,8 +61,6 @@ private:
     vec3 controllerVelocity;
 
     Particle* head;
-    std::vector<Particle*> bases;
-    std::vector<Particle*> segments;
 };
 
 #endif

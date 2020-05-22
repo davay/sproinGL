@@ -4,13 +4,16 @@
 class GameObject {
 
     public:
-        virtual void onCollision(void*) = 0;
+        virtual void collideWith(void*, void*) = 0;
 
     protected:
-        virtual void update(double, void*) = 0;
-        static const int PLAYER = 0;
-        static const int CENTIPEDE = 1;
+        const int PLAYER = 0;
+        const int CENTIPEDE = 1;
+        const int EMU = 2;
+
         int objectId;
+
+        virtual void update(double, void*) = 0;
 };
 
 #endif

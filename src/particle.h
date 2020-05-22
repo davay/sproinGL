@@ -32,7 +32,7 @@ public:
         // Collide with the ground
         if (position.x > -25 && position.x < 25) {
             if (position.z > -25 && position.z < 25) {
-                if (position.y - radius < 0.0f) {
+                if (position.y + radius > -2 && position.y - radius < 0.0f) {
                     position.y = 0.0 + radius;
                     velocity.x *= damping;
                     velocity.y *= -damping;
@@ -46,8 +46,8 @@ public:
         netForce.x = netForce.y = netForce.z = 0.0f;
     }
 
-    void onCollision(Particle* other) {
-        owner->onCollision(other);
+    void collideWith(Particle *other) {
+        owner->collideWith(this, other);
     }
 
     void setPosition(vec3 position) {
@@ -61,7 +61,6 @@ public:
     void setForceExcemption(bool isForceExempt) {
         this->isForceExempt = isForceExempt;
     }
-
 
     mat4 getXform() {
         return Translate(position) * Scale(radius, radius, radius);

@@ -1,9 +1,9 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include "game_object.h"
 #include "particle.h"
 #include "spring.h"
-#include "game_object.h"
 
 #include "VecMat.h"
 #include <typeinfo>
@@ -19,7 +19,6 @@ public:
 
         this->controllerPosition = controllerPosition;
         controllerVelocity = vec3(0, 0, 0);
-        controllerDirection = vec3(0, 0, 1);
         lookDirection = vec3(0, 0, 1);
         up = vec3(0, 1, 0);
         tailPosition = controllerPosition - vec3(0, 0, 1);
@@ -33,8 +32,8 @@ public:
         // Define physics components
         base = new Particle(this, objectId, controllerPosition, 1, FOOT_RADIUS);
         torso = new Particle(this, objectId, controllerPosition + vec3(0, HEIGHT, 0), 1, 0.5);
-        leftHand = new Particle(this, objectId, controllerPosition + vec3(ARM_LENGTH, HEIGHT, 0), 0.5, HAND_RADIUS);
-        rightHand = new Particle(this, objectId, controllerPosition + vec3(-ARM_LENGTH, HEIGHT, 0), 0.5, HAND_RADIUS);
+        leftHand = new Particle(this, objectId, controllerPosition + vec3(ARM_LENGTH, HEIGHT, 0), 1.5, HAND_RADIUS);
+        rightHand = new Particle(this, objectId, controllerPosition + vec3(-ARM_LENGTH, HEIGHT, 0), 1.5, HAND_RADIUS);
         leftFoot = new Particle(this, objectId, leftFootTarget, 0.1, FOOT_RADIUS);
         rightFoot = new Particle(this, objectId, rightFootTarget, 0.1, FOOT_RADIUS);
 
@@ -46,11 +45,11 @@ public:
         pm->addParticle(rightFoot);
 
         pm->addSpring(new Spring(torso, base, HEIGHT, 0.08, 0.08), false);
-        pm->addSpring(new Spring(torso, leftHand, ARM_LENGTH, 0.08, 0.08));
-        pm->addSpring(new Spring(torso, rightHand, ARM_LENGTH, 0.08, 0.08));
+        pm->addSpring(new Spring(torso, leftHand, ARM_LENGTH, 0.04, 0.05));
+        pm->addSpring(new Spring(torso, rightHand, ARM_LENGTH, 0.04, 0.05));
         pm->addSpring(new Spring(torso, leftFoot, LEG_LENGTH, 0.08, 0.08));
         pm->addSpring(new Spring(torso, rightFoot, LEG_LENGTH, 0.08, 0.08));
-        pm->addSpring(new Spring(leftHand, rightHand, 5, 0.004, 0.001), false);
+        //pm->addSpring(new Spring(leftHand, rightHand, 2, 0.01, 0.01), false);
     }
 
     void input(GLFWwindow *window) {
@@ -78,15 +77,12 @@ public:
             isMoving = true;
         }
         if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-            // TODO: Fix bug where feet sometimes start stepping in the wrong place after landing a jump
-            /*
             if (isOnGround) {
                 controllerVelocity.y = 0.3;
                 base->setVelocity(controllerVelocity);
                 torso->setVelocity(controllerVelocity);
                 isOnGround = false;
             }
-            */
         }
 
         // Mouse input for look direction
@@ -178,7 +174,7 @@ public:
             // Start a new stride with the opposite foot
             if (stride >= strideLength) {
                 vec3 footStraddleOffset = normalize(cross(horizontalVelocity, up)) * FOOT_STRADDLE_OFFSET;
-                vec3 footTarget = controllerPosition + normalize(horizontalVelocity) * (STRIDE_LENGTH_MIN + length(controllerVelocity) * 15);
+                vec3 footTarget = controllerPosition + normalize(horizontalVelocity) * (STRIDE_LENGTH_MIN + length(controllerVelocity) * 13);
 
                 if (shouldMoveLeftFoot) {
                     // Play popping noise
@@ -208,18 +204,20 @@ public:
         }
 
         // Force the hands down so they don't float up like a weirdo
-        leftHand->applyForce(vec3(0, -0.005, 0));
-        rightHand->applyForce(vec3(0, -0.005, 0));
+        //vec3 handForce = (tailPosition - controllerPosition) * 0.05;
+        //leftHand->applyForce(handForce);
+        //rightHand->applyForce(handForce);
     }
 
-    void onCollision(void* other) override {
-        Particle* otherParticle = static_cast<Particle*>(other);
+    void collideWith(void* thisCollider, void* otherCollider) override {
+        Particle* thisParticle = static_cast<Particle*>(thisCollider);
+        Particle* otherParticle = static_cast<Particle*>(otherCollider);
 
         int otherObjectId = otherParticle->getObjectId();
 
         if (otherObjectId == 1) {
-            vec3 responseVelocity = (torso->getPosition() - otherParticle->getPosition()) * 0.1f;
-            responseVelocity.y = 0.2f;
+            vec3 responseVelocity = (torso->getPosition() - otherParticle->getPosition()) * 0.05f;
+            responseVelocity.y = 0.1f;
             controllerVelocity = responseVelocity;
             base->setVelocity(responseVelocity);
             torso->setVelocity(responseVelocity);
@@ -229,7 +227,7 @@ public:
     }
 
     mat4 getXform() {
-        vec3 z = normalize(lookDirection);
+        vec3 z = normalize(bodyDirection);
         vec3 x = normalize(cross(up, z));
         vec3 y = normalize(cross(z, x));
 
@@ -255,7 +253,7 @@ private:
     const float MOVE_FRICTION = 0.08f;
     const float STRIDE_LENGTH = 2.5f;
     const float STRIDE_LENGTH_MIN = 0.1f;
-    const float STEP_SPEED = 0.25;
+    const float STEP_SPEED = 0.6;
     const float FOOT_STRADDLE_OFFSET = 0.6;
     const float FOOT_RADIUS = 0.3f;
     const float HAND_RADIUS = 0.3f;
@@ -267,7 +265,6 @@ private:
     const int MAX_HEALTH = 100;
 
     vec3 controllerPosition;
-    vec3 controllerDirection;
     vec3 controllerVelocity;
     vec3 up;
     float pitch, yaw;
@@ -285,10 +282,8 @@ private:
 
     Particle *base;
     Particle *torso;
-    Particle *leftHand;
-    Particle *rightHand;
-    Particle *leftFoot;
-    Particle *rightFoot;
+    Particle *leftHand, *rightHand;
+    Particle *leftFoot, *rightFoot;
 };
 
 #endif

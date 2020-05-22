@@ -1,6 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "emu.h"
 #include "game_camera.h"
 #include "player.h"
 #include "model.h"
@@ -26,6 +27,7 @@ public:
         : gameCamera(vec3(0, 1, 10), (float) screenWidth / screenHeight)
         , player(&pm, vec3(0, 0, 0))
         , centipede(&pm, vec3(5, 1, 0))
+        , emu(&pm, vec3(-4, 2, 4))
         , sphereModel(vec3(1.0f, 0.5f, 0.2f))
         , cubeModel(vec3(1.0f, 0.3f, 0.4f))
         , cylinderModel(vec3(1.0f, 1.0f, 1.0f))
@@ -46,6 +48,7 @@ public:
         player.input(window);
         player.update(timeDelta, nullptr);
         centipede.update(timeDelta, &player);
+        emu.update(timeDelta, &player);
 
         gameCamera.update(timeDelta, &player);
     }
@@ -88,6 +91,7 @@ private:
     GameCamera gameCamera;
     Player player;
     Centipede centipede;
+    Emu emu;
 
     Model sphereModel, cubeModel, cylinderModel, monkeyModel;
 };
