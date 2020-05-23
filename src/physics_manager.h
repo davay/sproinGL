@@ -23,7 +23,7 @@ public:
                 Particle *p2 = particles[j];
                 vec3 delta = p2->getPosition() - p1->getPosition();
 
-                if (length(delta) < p1->getRadius() + p2->getRadius()) {
+                if (length(delta) > 0 && length(delta) < p1->getRadius() + p2->getRadius()) {
                     float bounceStrength = 0.004f / sqrt(length(delta));
                     vec3 bounceForce = -delta * bounceStrength;
                     p1->applyForce(bounceForce);

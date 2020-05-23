@@ -65,7 +65,7 @@ int main() {
     GLFWwindow *window = glfwCreateWindow(monitorWidth, monitorHeight, "SproinGL", glfwGetPrimaryMonitor(), NULL);
 
     glfwMakeContextCurrent(window);
-    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     //glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // glad: load all OpenGL function pointers

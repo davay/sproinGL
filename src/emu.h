@@ -26,8 +26,8 @@ public:
         leftKnee = new Particle(this, objectId, controllerPosition + vec3(1, 2, 0), 1, 0.2);
         rightKnee = new Particle(this, objectId, controllerPosition + vec3(-1, 2, 0), 1, 0.2);
 
-        neckSegments.push_back(new Particle(this, objectId, controllerPosition + vec3(0, 5, 0), 1, 0.1));
-        neckSegments.push_back(new Particle(this, objectId, controllerPosition + vec3(0, 6, 0), 1, 0.1));
+        neckSegments.push_back(new Particle(this, objectId, controllerPosition + vec3(0, 5, 0), 2, 0.2));
+        neckSegments.push_back(new Particle(this, objectId, controllerPosition + vec3(0, 6, 0), 2, 0.2));
 
         pm->addParticle(base, false);
         pm->addParticle(torso);

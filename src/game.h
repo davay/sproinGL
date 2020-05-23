@@ -1,18 +1,15 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "centipede.h"
 #include "emu.h"
 #include "game_camera.h"
-#include "player.h"
 #include "model.h"
 #include "particle.h"
 #include "physics_manager.h"
+#include "player.h"
 #include "spring.h"
 
-#include "centipede.h"
-
-#include "Camera.h"
-#include "Draw.h"
 #include "GLXtras.h"
 #include "Mesh.h"
 #include "Misc.h"
@@ -26,7 +23,7 @@ public:
     Game(GLFWwindow *window, unsigned int screenWidth, int screenHeight)
         : gameCamera(vec3(0, 1, 10), (float) screenWidth / screenHeight)
         , player(&pm, vec3(0, 0, 0))
-        , centipede(&pm, vec3(5, 1, 0))
+        //, centipede(&pm, vec3(5, 1, 0))
         , emu(&pm, vec3(-4, 2, 4))
         , sphereModel(vec3(1.0f, 0.5f, 0.2f))
         , cubeModel(vec3(1.0f, 0.3f, 0.4f))
@@ -47,7 +44,7 @@ public:
         // Update entities
         player.input(window);
         player.update(timeDelta, nullptr);
-        centipede.update(timeDelta, &player);
+        //centipede.update(timeDelta, &player);
         emu.update(timeDelta, &player);
 
         gameCamera.update(timeDelta, &player);
@@ -90,7 +87,7 @@ private:
     PhysicsManager pm;
     GameCamera gameCamera;
     Player player;
-    Centipede centipede;
+    //Centipede centipede; TODO: Centipede seems to be the cause of the mouse lock bug
     Emu emu;
 
     Model sphereModel, cubeModel, cylinderModel, monkeyModel;

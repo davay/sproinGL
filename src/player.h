@@ -47,9 +47,8 @@ public:
         pm->addSpring(new Spring(torso, base, HEIGHT, 0.08, 0.08), false);
         pm->addSpring(new Spring(torso, leftHand, ARM_LENGTH, 0.04, 0.05));
         pm->addSpring(new Spring(torso, rightHand, ARM_LENGTH, 0.04, 0.05));
-        pm->addSpring(new Spring(torso, leftFoot, LEG_LENGTH, 0.08, 0.08));
-        pm->addSpring(new Spring(torso, rightFoot, LEG_LENGTH, 0.08, 0.08));
-        //pm->addSpring(new Spring(leftHand, rightHand, 2, 0.01, 0.01), false);
+        pm->addSpring(new Spring(torso, leftFoot, LEG_LENGTH, 0.04, 0.1));
+        pm->addSpring(new Spring(torso, rightFoot, LEG_LENGTH, 0.04, 0.1));
     }
 
     void input(GLFWwindow *window) {
@@ -100,8 +99,8 @@ public:
         yaw   += xOffset;
         pitch += yOffset;
 
-        if (pitch > -0.05) pitch = -0.05;
-        if (pitch < -1.1) pitch = -1.1;
+        if (pitch > 0) pitch = 0;
+        if (pitch < -1.3) pitch = -1.3;
 
         vec3 direction = vec3(
             cos(yaw) * cos(pitch),
@@ -144,10 +143,15 @@ public:
         // Collide with ground
         bool wasOnGround = isOnGround;
         isOnGround = false;
-        if (controllerPosition.y < 0 + base->getRadius()) {
-            controllerPosition.y = base->getRadius();
-            controllerVelocity.y = 0;
-            isOnGround = true;
+
+        if (controllerPosition.x > -25 && controllerPosition.x < 25) {
+            if (controllerPosition.z > -25 && controllerPosition.z < 25) {
+                if (controllerPosition.y + FOOT_RADIUS > -2 && controllerPosition.y - FOOT_RADIUS < 0.0f) {
+                    controllerPosition.y = FOOT_RADIUS;
+                    controllerVelocity.y = 0;
+                    isOnGround = true;
+                }
+            }
         }
 
         base->setPosition(controllerPosition);
@@ -155,32 +159,30 @@ public:
 
         // Animate walk cycle while on the ground
         if (isOnGround) {
-            vec3 horizontalVelocity = vec3(controllerVelocity.x, 0, controllerVelocity.z);
+            const vec3 horizontalVelocity = vec3(controllerVelocity.x, 0, controllerVelocity.z);
             stride += length(horizontalVelocity);
 
             // Determine the length of a stride based on the current horizontal velocity
-            strideLength = length(horizontalVelocity) * 12.0;
+            float strideLength = length(horizontalVelocity) * 12.0;
             if (strideLength < 0.6) strideLength = 0.6;
 
             // After landing a jump, set new foot target positions
             if (!wasOnGround) {
-                vec3 footStraddleOffset = normalize(cross(bodyDirection, up)) * FOOT_STRADDLE_OFFSET;
-                vec3 leftOffset = -normalize(cross(bodyDirection, up)) * FOOT_STRADDLE_OFFSET;
-                vec3 rightOffset = normalize(cross(bodyDirection, up)) * FOOT_STRADDLE_OFFSET;
+                const vec3 footStraddleOffset = normalize(cross(bodyDirection, up)) * FOOT_STRADDLE_OFFSET;
+                const vec3 leftOffset = -normalize(cross(bodyDirection, up)) * FOOT_STRADDLE_OFFSET;
+                const vec3 rightOffset = normalize(cross(bodyDirection, up)) * FOOT_STRADDLE_OFFSET;
                 leftFootTarget = controllerPosition + leftOffset;
                 rightFootTarget = controllerPosition + rightOffset;
             }
 
             // Start a new stride with the opposite foot
             if (stride >= strideLength) {
-                vec3 footStraddleOffset = normalize(cross(horizontalVelocity, up)) * FOOT_STRADDLE_OFFSET;
-                vec3 footTarget = controllerPosition + normalize(horizontalVelocity) * (STRIDE_LENGTH_MIN + length(controllerVelocity) * 13);
+                const vec3 footStraddleOffset = normalize(cross(horizontalVelocity, up)) * FOOT_STRADDLE_OFFSET;
+                const vec3 footTarget = controllerPosition + normalize(horizontalVelocity) * (STRIDE_LENGTH_MIN + length(controllerVelocity) * 13);
 
                 if (shouldMoveLeftFoot) {
-                    // Play popping noise
                     rightFootTarget = footTarget + footStraddleOffset;
                 } else {
-                    // Play popping noise
                     leftFootTarget = footTarget - footStraddleOffset;
                 }
 
@@ -189,24 +191,16 @@ public:
             }
 
             // Move feet toward their respective target positions
-            vec3 leftFootPosition = leftFoot->getPosition();
-            vec3 rightFootPosition = rightFoot->getPosition();
+            const vec3 leftFootPosition = leftFoot->getPosition();
+            const vec3 rightFootPosition = rightFoot->getPosition();
 
-            leftFoot->setPosition(leftFootPosition + (leftFootTarget - leftFootPosition) * STEP_SPEED);
-            rightFoot->setPosition(rightFootPosition + (rightFootTarget - rightFootPosition) * STEP_SPEED);
-
-            leftFoot->setForceExcemption(true);
-            rightFoot->setForceExcemption(true);
+            leftFoot->applyForce((leftFootTarget - leftFootPosition) * 0.03);
+            rightFoot->applyForce((rightFootTarget - rightFootPosition) * 0.03);
         } else {
             // Feet are free-floating while in midair
             leftFoot->setForceExcemption(false);
             rightFoot->setForceExcemption(false);
         }
-
-        // Force the hands down so they don't float up like a weirdo
-        //vec3 handForce = (tailPosition - controllerPosition) * 0.05;
-        //leftHand->applyForce(handForce);
-        //rightHand->applyForce(handForce);
     }
 
     void collideWith(void* thisCollider, void* otherCollider) override {
@@ -248,19 +242,19 @@ public:
 
 private:
     const float CONTROLLER_RADIUS = 0.5f;
-    const float MAX_SPEED = 0.2f;
+    const float MAX_SPEED = 0.18f;
     const float MOVE_FORCE = 0.02f;
     const float MOVE_FRICTION = 0.08f;
     const float STRIDE_LENGTH = 2.5f;
     const float STRIDE_LENGTH_MIN = 0.1f;
-    const float STEP_SPEED = 0.6;
+    const float STEP_SPEED = 0.4;
     const float FOOT_STRADDLE_OFFSET = 0.6;
     const float FOOT_RADIUS = 0.3f;
     const float HAND_RADIUS = 0.3f;
 
     const float HEIGHT = 2.0f;
     const float ARM_LENGTH = 1.2f;
-    const float LEG_LENGTH = 2.0f;
+    const float LEG_LENGTH = 2.1f;
 
     const int MAX_HEALTH = 100;
 
@@ -277,7 +271,7 @@ private:
     vec3 bodyDirection;
     vec3 leftFootTarget;
     vec3 rightFootTarget;
-    float stride, strideLength;
+    float stride;
     bool shouldMoveLeftFoot;
 
     Particle *base;
