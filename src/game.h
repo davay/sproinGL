@@ -23,7 +23,7 @@ public:
     Game(GLFWwindow *window, unsigned int screenWidth, int screenHeight)
         : gameCamera(vec3(0, 1, 10), (float) screenWidth / screenHeight)
         , player(&pm, vec3(0, 0, 0))
-        //, centipede(&pm, vec3(5, 1, 0))
+        , centipede(&pm, vec3(5, 1, 0))
         , emu(&pm, vec3(-4, 2, 4))
         , sphereModel(vec3(1.0f, 0.5f, 0.2f))
         , cubeModel(vec3(1.0f, 0.3f, 0.4f))
@@ -35,6 +35,9 @@ public:
         cubeModel.read("./assets/cube.obj");
         cylinderModel.read("./assets/cylinder.obj");
         monkeyModel.read("./assets/monkey.obj");
+
+        sceneShader = LinkProgramViaFile("./src/shaders/scene_vshader.txt", "./src/shaders/scene_fshader.txt");
+        hudShader = LinkProgramViaFile("./src/shaders/hud_vshader", "./src/shaders/hud_fshader.txt");
     }
 
     void update(double timeDelta) {
@@ -44,26 +47,31 @@ public:
         // Update entities
         player.input(window);
         player.update(timeDelta, nullptr);
-        //centipede.update(timeDelta, &player);
+        centipede.update(timeDelta, &player);
         emu.update(timeDelta, &player);
 
         gameCamera.update(timeDelta, &player);
     }
 
-    void draw(int shaderProgram, int shaderProgramHUD) {
-        glUseProgram(shaderProgram);
-        SetUniform(shaderProgram, "cameraView", gameCamera.getView());
+    void draw() {
+        // Clear screen
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
+
+        glUseProgram(sceneShader);
+        SetUniform(sceneShader, "cameraView", gameCamera.getView());
 
         // Draw arena
         cubeModel.setXform(Translate(0.0f, -1.0f, 0.0f) * Scale(25, 1, 25));
-        cubeModel.draw(shaderProgram);
+        cubeModel.draw(sceneShader);
 
         // Draw particles
         std::vector<Particle*>* visibleParticles = pm.getVisibleParticles();
         for (int i = 0; i < visibleParticles->size(); i++) {
             Particle* particle = (*visibleParticles)[i];
             sphereModel.setXform(particle->getXform());
-            sphereModel.draw(shaderProgram);
+            sphereModel.draw(sceneShader);
         }
 
         // Draw springs
@@ -71,11 +79,18 @@ public:
         for (int i = 0; i < visibleSprings->size(); i++) {
             Spring* spring = (*visibleSprings)[i];
             cylinderModel.setXform(spring->getXform());
-            cylinderModel.draw(shaderProgram);
+            cylinderModel.draw(sceneShader);
         }
 
         monkeyModel.setXform(player.getXform());
-        monkeyModel.draw(shaderProgram);
+        monkeyModel.draw(sceneShader);
+
+        //glDisable(GL_DEPTH_TEST);
+
+        // Draw healthbar
+        //glUseProgram(sceneShader);
+        cubeModel.setXform(Translate(0.0f, 0.0f, -10.0f));
+        cubeModel.draw(sceneShader);
     }
 
     Player* getPlayer() {
@@ -83,14 +98,17 @@ public:
     }
 
 private:
+
     GLFWwindow *window;
+
+    Model sphereModel, cubeModel, cylinderModel, monkeyModel;
+
     PhysicsManager pm;
     GameCamera gameCamera;
     Player player;
-    //Centipede centipede; TODO: Centipede seems to be the cause of the mouse lock bug
+    Centipede centipede; //TODO: Centipede seems to be the cause of the mouse lock
     Emu emu;
-
-    Model sphereModel, cubeModel, cylinderModel, monkeyModel;
+    int sceneShader, hudShader;
 };
 
 #endif

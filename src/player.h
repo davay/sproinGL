@@ -3,9 +3,11 @@
 
 #include "game_object.h"
 #include "particle.h"
+#include "physics_manager.h"
 #include "spring.h"
 
 #include "VecMat.h"
+
 #include <typeinfo>
 #include <glad.h>
 #include <GLFW/glfw3.h>
@@ -196,6 +198,9 @@ public:
 
             leftFoot->applyForce((leftFootTarget - leftFootPosition) * 0.03);
             rightFoot->applyForce((rightFootTarget - rightFootPosition) * 0.03);
+
+            leftFoot->setPosition(vec3(leftFootPosition.x, leftFootTarget.y, leftFootPosition.z));
+            rightFoot->setPosition(vec3(rightFootPosition.x, rightFootTarget.y, rightFootPosition.z));
         } else {
             // Feet are free-floating while in midair
             leftFoot->setForceExcemption(false);

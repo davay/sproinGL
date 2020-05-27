@@ -5,8 +5,8 @@ layout (location = 0) in vec3 point;
 out vec3 vPoint;
 out vec3 vColor;
 
-uniform mat4 offsetTrans;
-uniform vec3 geomColor;
+uniform mat4 modelTrans;
+uniform vec3 modelColor;
 
 void main() {
     vPoint = (modelTrans * vec4(point, 1)).xyz;

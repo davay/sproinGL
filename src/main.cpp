@@ -5,20 +5,8 @@
 #include "player.h"
 #include "game.h"
 
-#include "Camera.h"
-#include "Draw.h"
-#include "GLXtras.h"
-#include "Mesh.h"
-#include "Misc.h"
-#include "VecMat.h"
-
 #include <glad.h>
 #include <GLFW/glfw3.h>
-
-#include <iostream>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 /*
 bool Shift(GLFWwindow *w) {
@@ -71,10 +59,6 @@ int main() {
     // glad: load all OpenGL function pointers
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
-    // Build and compile shader program
-    int shaderProgram = LinkProgramViaFile("./src/shaders/vertex_shader.txt", "./src/shaders/fragment_shader.txt");
-    int shaderProgramHUD = LinkProgramViaFile("./src/shaders/vshader_hud.txt", "./src/shaders/fshader_hud.txt");
-
     // Initialize game
     Game game(window, monitorWidth, monitorHeight);
 
@@ -89,13 +73,7 @@ int main() {
             glfwSetWindowShouldClose(window, GLFW_TRUE);
 
         game.update(timeDelta);
-
-        // Clear screen
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glEnable(GL_DEPTH_TEST);
-
-        game.draw(shaderProgram, shaderProgramHUD);
+        game.draw();
 
         glfwSwapBuffers(window);
         glfwPollEvents();

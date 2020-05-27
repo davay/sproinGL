@@ -103,15 +103,11 @@ public:
         rightFoot->setForceExcemption(true);
     }
 
-    void collideWith(void* thisCollider, void* otherCollider) override {
+    void collideWith(void *thisCollider, void *otherCollider) override {
     }
 
-
-
 private:
-
-
-    const float MAX_SPEED = 0.12f;
+    const float MAX_SPEED = 0.10f;
     const float STRIDE_LENGTH = 2.5f;
     const float STRIDE_LENGTH_MIN = 0.1f;
     const float STEP_SPEED = 0.6;

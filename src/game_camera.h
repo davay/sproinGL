@@ -5,8 +5,6 @@
 
 #include "VecMat.h"
 
-#include "math.h"
-
 class GameCamera {
 public:
     GameCamera(vec3 position, float aspectRatio) {
@@ -15,7 +13,7 @@ public:
         persp = Perspective(45, aspectRatio, 1, 200);
     }
 
-    void update(double timeDelta, Player* player) {
+    void update(double timeDelta, Player *player) {
         vec3 playerPosition = player->getControllerPosition();
         vec3 lookDirection = player->getLookDirection();
         position = playerPosition - lookDirection * DISTANCE_FROM_TARGET;
