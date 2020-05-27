@@ -11,5 +11,5 @@ uniform vec3 modelColor;
 void main() {
     vPoint = (modelTrans * vec4(point, 1)).xyz;
     vColor = modelColor;
-    gl_Position = offsetTrans * vec4(point, 1.0);
+    gl_Position = modelTrans * vec4(point, 1.0);
 }

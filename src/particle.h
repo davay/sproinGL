@@ -37,7 +37,6 @@ public:
                     velocity.x *= damping;
                     velocity.y *= -damping;
                     velocity.z *= damping;
-
                 }
             }
         }
@@ -47,7 +46,8 @@ public:
     }
 
     void collideWith(Particle *other) {
-        owner->collideWith(this, other);
+        if (owner != nullptr)
+            owner->collideWith(this, other);
     }
 
     void setPosition(vec3 position) {

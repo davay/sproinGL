@@ -17,7 +17,7 @@
 
 class Player: protected GameObject {
 public:
-    Player(PhysicsManager* pm, vec3 controllerPosition) {
+    Player(PhysicsManager *pm, vec3 controllerPosition) {
         objectId = PLAYER;
 
         this->controllerPosition = controllerPosition;
@@ -54,7 +54,7 @@ public:
         pm->addSpring(new Spring(torso, rightFoot, LEG_LENGTH, 0.04, 0.1));
     }
 
-    void input(GLFWwindow *window) {
+    void input(GLFWwindow *window, PhysicsManager *pm) {
         isMoving = false;
 
         // Keyboard input for movement
@@ -85,6 +85,17 @@ public:
                 torso->setVelocity(controllerVelocity);
                 isOnGround = false;
             }
+        }
+
+        int mouseButtonState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+        if (mouseButtonState == GLFW_PRESS && !isMousePressed) {
+            isMousePressed = true;
+            Particle *bullet = new Particle(nullptr, -1, controllerPosition + vec3(0, 2, 0) + bodyDirection, 1, 0.4, 0.1, false, bodyDirection * 0.4);
+            pm->addParticle(bullet);
+        }
+
+        if (mouseButtonState == GLFW_RELEASE) {
+            isMousePressed = false;
         }
 
         // Mouse input for look direction
@@ -197,8 +208,8 @@ public:
             const vec3 leftFootPosition = leftFoot->getPosition();
             const vec3 rightFootPosition = rightFoot->getPosition();
 
-            leftFoot->applyForce((leftFootTarget - leftFootPosition) * 0.03);
-            rightFoot->applyForce((rightFootTarget - rightFootPosition) * 0.03);
+            leftFoot->applyForce((leftFootTarget - leftFootPosition) * 0.04);
+            rightFoot->applyForce((rightFootTarget - rightFootPosition) * 0.04);
 
             leftFoot->setPosition(vec3(leftFootPosition.x, leftFootTarget.y, leftFootPosition.z));
             rightFoot->setPosition(vec3(rightFootPosition.x, rightFootTarget.y, rightFootPosition.z));
@@ -209,9 +220,9 @@ public:
         }
     }
 
-    void collideWith(void* thisCollider, void* otherCollider) override {
-        Particle* thisParticle = static_cast<Particle*>(thisCollider);
-        Particle* otherParticle = static_cast<Particle*>(otherCollider);
+    void collideWith(void *thisCollider, void *otherCollider) override {
+        Particle *thisParticle = static_cast<Particle*>(thisCollider);
+        Particle *otherParticle = static_cast<Particle*>(otherCollider);
 
         int otherObjectId = otherParticle->getObjectId();
 
@@ -222,7 +233,7 @@ public:
             base->setVelocity(responseVelocity);
             torso->setVelocity(responseVelocity);
             isOnGround = false;
-            health -= 1;
+            health -= 2;
         }
     }
 
@@ -271,7 +282,7 @@ private:
     float pitch, yaw;
     vec3 lookDirection;
     double lastMouseX, lastMouseY;
-    bool isMoving, isOnGround;
+    bool isMoving, isOnGround, isMousePressed;
     int health;
 
     vec3 tailPosition;

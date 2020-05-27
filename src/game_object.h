@@ -12,6 +12,7 @@ class GameObject {
         const int EMU = 2;
 
         int objectId;
+        bool shouldDelete;
 
         virtual void update(double, void*) = 0;
 };
