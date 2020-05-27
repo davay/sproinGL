@@ -9,7 +9,7 @@
 #include "physics_manager.h"
 #include "player.h"
 #include "spring.h"
-
+#include "shadow.h"
 #include "GLXtras.h"
 #include "Mesh.h"
 #include "Misc.h"
@@ -30,6 +30,8 @@ public:
         , cylinderModel(vec3(1.0f, 1.0f, 1.0f))
         , monkeyModel(vec3(0.3f, 0.7f, 0.0f))
     {
+        this->screenWidth = screenWidth;
+        this->screenHeight = screenHeight;
         this->window = window;
         sphereModel.read("./assets/sphere.obj");
         cubeModel.read("./assets/cube.obj");
@@ -37,7 +39,9 @@ public:
         monkeyModel.read("./assets/monkey.obj");
 
         sceneShader = LinkProgramViaFile("./src/shaders/scene_vshader.txt", "./src/shaders/scene_fshader.txt");
-        hudShader = LinkProgramViaFile("./src/shaders/hud_vshader", "./src/shaders/hud_fshader.txt");
+        hudShader = LinkProgramViaFile("./src/shaders/hud_vshader", "./src/shaders/hud_fshader.txt");\
+        shadowShader = LinkProgramViaFile("./src/shaders/scene_vshader.txt", "./src/shaders/shadow_fshader.txt");
+
     }
 
     void update(double timeDelta) {
@@ -57,7 +61,47 @@ public:
         // Clear screen
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        generateShadowFBO();
         glEnable(GL_DEPTH_TEST);
+
+        glUseProgram(shadowShader);
+        vec3 lp(2, 5.f, 2);
+        vec3 ld(-1.f, -1.f, 0.f);
+        float penumbraAngle = 50.f;
+        // Light space matrices
+        // From light space to shadow map screen space
+        mat4 projection = Perspective((DegreesToRadians * penumbraAngle*2.f), 1.f, 1.f, 100.f);
+        // From world to light
+        mat4 worldToLight = LookAt(lp, lp+ld, vec3(0.f, 0.f, -1.f));
+        // From object to light (MV for light)
+        // @TODO WTF
+        mat4 objectToWorld;
+        mat4 objectToLight = worldToLight * objectToWorld;
+        // From object to shadow map screen space (MVP for light)
+        mat4 objectToLightScreen = projection * objectToLight;
+        // From world to shadow map screen space 
+        mat4 worldToLightScreen = projection * worldToLight;
+
+        // Bind the shadow FBO
+        glBindFramebuffer(GL_FRAMEBUFFER, shadowFbo);
+
+        // Set the viewport corresponding to shadow texture resolution
+        glViewport(0, 0, 512, 512);
+
+        // Clear only the depth buffer
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        // @TODO MVP
+        SetUniform(shadowShader, "modelTrans", &objectToLightScreen[0]);
+        // @TODO MV
+        SetUniform(shadowShader, "cameraView", &objectToLight[0]);
+
+        // Fallback to default framebuffer
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // Revert to window size viewport
+        glViewport(0, 0, screenWidth, screenHeight);
 
         glUseProgram(sceneShader);
         SetUniform(sceneShader, "cameraView", gameCamera.getView());
@@ -91,6 +135,7 @@ public:
         //glUseProgram(sceneShader);
         cubeModel.setXform(Translate(0.0f, 0.0f, -10.0f));
         cubeModel.draw(sceneShader);
+        
     }
 
     Player* getPlayer() {
@@ -108,7 +153,8 @@ private:
     Player player;
     Centipede centipede; //TODO: Centipede seems to be the cause of the mouse lock
     Emu emu;
-    int sceneShader, hudShader;
+    int sceneShader, hudShader, shadowShader;
+    int screenWidth, screenHeight;
 };
 
 #endif

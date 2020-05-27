@@ -4,7 +4,6 @@
 #include "physics_manager.h"
 #include "player.h"
 #include "game.h"
-
 #include <glad.h>
 #include <GLFW/glfw3.h>
 
@@ -44,7 +43,7 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GL_FALSE);
 #endif
-
+        
     const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
     int monitorWidth = mode->width;
     int monitorHeight = mode->height;
