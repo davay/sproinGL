@@ -1,38 +1,8 @@
-#include "model.h"
-#include "particle.h"
-#include "spring.h"
-#include "physics_manager.h"
-#include "player.h"
 #include "game.h"
 
 #include <glad.h>
 #include <GLFW/glfw3.h>
 
-/*
-bool Shift(GLFWwindow *w) {
-    return glfwGetKey(w, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
-           glfwGetKey(w, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
-}
-
-void MouseButton(GLFWwindow *w, int butn, int action, int mods) {
-    if (action == GLFW_PRESS) {
-        double x, y;
-        glfwGetCursorPos(w, &x, &y);
-        camera.MouseDown((int) x, (int) y);
-    }
-    if (action == GLFW_RELEASE)
-        camera.MouseUp();
-}
-
-void MouseMove(GLFWwindow *window, double x, double y) {
-    //if (glfwGetMouseButton(w, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-    camera.MouseDrag((int) x, (int) y, Shift(w));
-}
-
-void resize(GLFWwindow *window, int width, int height) {
-    camera.Resize(width, height);
-}
-*/
 
 int main() {
     glfwInit();

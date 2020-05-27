@@ -13,6 +13,7 @@
 #include <GLFW/glfw3.h>
 
 #include "math.h"
+#include <vector>
 
 class Player: protected GameObject {
 public:
@@ -221,7 +222,7 @@ public:
             base->setVelocity(responseVelocity);
             torso->setVelocity(responseVelocity);
             isOnGround = false;
-            //health -= 5;
+            health -= 1;
         }
     }
 
@@ -244,6 +245,7 @@ public:
 
     vec3 getControllerPosition() { return controllerPosition; }
     vec3 getLookDirection() { return lookDirection; }
+    int getHealth() { return health; }
 
 private:
     const float CONTROLLER_RADIUS = 0.5f;

@@ -4,7 +4,7 @@
 #include "particle.h"
 #include "spring.h"
 
-#include <stdlib.h>
+#include <vector>
 
 class PhysicsManager {
 public:

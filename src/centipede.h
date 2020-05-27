@@ -2,9 +2,14 @@
 #define CENTIPEDE_H
 
 #include "game_object.h"
+#include "particle.h"
+#include "physics_manager.h"
+#include "player.h"
+#include "spring.h"
+
 #include "VecMat.h"
 
-#include <stdlib.h>
+#include <vector>
 
 class Centipede: protected GameObject {
 public:

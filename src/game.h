@@ -2,7 +2,7 @@
 #define GAME_H
 
 #include "centipede.h"
-#include "emu.h"
+//#include "emu.h"
 #include "game_camera.h"
 #include "model.h"
 #include "particle.h"
@@ -18,13 +18,14 @@
 #include <glad.h>
 #include <GLFW/glfw3.h>
 
+
 class Game {
 public:
     Game(GLFWwindow *window, unsigned int screenWidth, int screenHeight)
         : gameCamera(vec3(0, 1, 10), (float) screenWidth / screenHeight)
         , player(&pm, vec3(0, 0, 0))
         , centipede(&pm, vec3(5, 1, 0))
-        , emu(&pm, vec3(-4, 2, 4))
+        //, emu(&pm, vec3(-4, 2, 4))
         , sphereModel(vec3(1.0f, 0.5f, 0.2f))
         , cubeModel(vec3(1.0f, 0.3f, 0.4f))
         , cylinderModel(vec3(1.0f, 1.0f, 1.0f))
@@ -48,7 +49,7 @@ public:
         player.input(window);
         player.update(timeDelta, nullptr);
         centipede.update(timeDelta, &player);
-        emu.update(timeDelta, &player);
+        //emu.update(timeDelta, &player);
 
         gameCamera.update(timeDelta, &player);
     }
@@ -58,6 +59,7 @@ public:
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
+        glDepthMask(GL_TRUE);
 
         glUseProgram(sceneShader);
         SetUniform(sceneShader, "cameraView", gameCamera.getView());
@@ -85,11 +87,9 @@ public:
         monkeyModel.setXform(player.getXform());
         monkeyModel.draw(sceneShader);
 
-        //glDisable(GL_DEPTH_TEST);
-
         // Draw healthbar
         //glUseProgram(sceneShader);
-        cubeModel.setXform(Translate(0.0f, 0.0f, -10.0f));
+        cubeModel.setXform(Translate(0.0f, 0.8f, -2.0f) * Scale(player.getHealth() * 0.1, 0.2, 0.2));
         cubeModel.draw(sceneShader);
     }
 
@@ -98,8 +98,8 @@ public:
     }
 
 private:
-
     GLFWwindow *window;
+    int sceneShader, hudShader;
 
     Model sphereModel, cubeModel, cylinderModel, monkeyModel;
 
@@ -107,8 +107,7 @@ private:
     GameCamera gameCamera;
     Player player;
     Centipede centipede; //TODO: Centipede seems to be the cause of the mouse lock
-    Emu emu;
-    int sceneShader, hudShader;
+    //Emu emu;
 };
 
 #endif
