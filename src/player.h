@@ -15,7 +15,7 @@
 #include "math.h"
 #include <vector>
 
-class Player: protected GameObject {
+class Player: public GameObject {
 public:
     Player(PhysicsManager *pm, vec3 controllerPosition) {
         objectId = PLAYER;
@@ -90,7 +90,7 @@ public:
         int mouseButtonState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
         if (mouseButtonState == GLFW_PRESS && !isMousePressed) {
             isMousePressed = true;
-            Particle *bullet = new Particle(nullptr, -1, controllerPosition + vec3(0, 2, 0) + bodyDirection, 1, 0.4, 0.1, false, bodyDirection * 0.4);
+            Particle *bullet = new Particle(nullptr, -1, controllerPosition + vec3(0, 2, 0) + bodyDirection, 1, 0.4, 0.5, false, bodyDirection * 0.4);
             pm->addParticle(bullet);
         }
 

@@ -11,7 +11,7 @@
 
 #include <vector>
 
-class Emu: protected GameObject {
+class Emu: public GameObject {
 public:
     Emu(PhysicsManager *pm, vec3 controllerPosition) {
         objectId = EMU;

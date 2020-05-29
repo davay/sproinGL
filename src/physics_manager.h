@@ -51,22 +51,14 @@ public:
         }
     }
 
-    void addParticle(Particle *particle, bool isVisible) {
+    void addParticle(Particle *particle, bool isVisible=true) {
         particles.push_back(particle);
         if (isVisible) visibleParticles.push_back(particle);
     }
 
-    void addSpring(Spring *spring, bool isVisible) {
+    void addSpring(Spring *spring, bool isVisible=true) {
         springs.push_back(spring);
         if (isVisible) visibleSprings.push_back(spring);
-    }
-
-    void addParticle(Particle *particle) {
-        addParticle(particle, true);
-    }
-
-    void addSpring(Spring *spring) {
-        addSpring(spring, true);
     }
 
     std::vector<Particle*> *getVisibleParticles() {

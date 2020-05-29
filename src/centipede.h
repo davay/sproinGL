@@ -11,7 +11,7 @@
 
 #include <vector>
 
-class Centipede: protected GameObject {
+class Centipede: public GameObject {
 public:
     Centipede(PhysicsManager *pm, vec3 controllerPosition) {
         objectId = CENTIPEDE;

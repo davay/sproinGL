@@ -59,31 +59,15 @@ public:
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    void drawInScene(int sceneShader) {
+    void draw(int shader) {
         int pointsSize = points.size() * sizeof(vec3);
 
         // Use model's vertex array object
         glBindVertexArray(vao);
 
         // Use the model's model-to-world transform
-        SetUniform(sceneShader, "modelTrans", xform);
-        SetUniform(sceneShader, "modelColor", color);
-
-        // Draw triangles
-        glDrawElements(GL_TRIANGLES, 3 * triangles.size(), GL_UNSIGNED_INT, 0);
-
-        glBindVertexArray(0);
-    }
-
-    void drawOnHUD(int hudShader) {
-        int pointsSize = points.size() * sizeof(vec3);
-
-        // Use model's vertex array object
-        glBindVertexArray(vao);
-
-        // Use the model's model-to-world transform
-        SetUniform(hudShader, "modelTrans", xform);
-        SetUniform(hudShader, "modelColor", color);
+        SetUniform(shader, "modelTrans", xform);
+        SetUniform(shader, "modelColor", color);
 
         // Draw triangles
         glDrawElements(GL_TRIANGLES, 3 * triangles.size(), GL_UNSIGNED_INT, 0);
