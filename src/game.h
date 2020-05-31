@@ -1,7 +1,6 @@
 #ifndef GAME_H
 #define GAME_H
 
-//#include "ball.h"
 #include "centipede.h"
 #include "emu.h"
 #include "game_camera.h"

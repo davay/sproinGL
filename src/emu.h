@@ -17,6 +17,8 @@ public:
         objectId = EMU;
 
         up = vec3(0, 1, 0);
+        this->controllerPosition = controllerPosition;
+        controllerVelocity = vec3(0, 0, 0);
         tailPosition = controllerPosition - vec3(0, 0, 1);
         leftFootTarget = controllerPosition + vec3(FOOT_STRADDLE_OFFSET, 0, 0);
         rightFootTarget = controllerPosition + vec3(-FOOT_STRADDLE_OFFSET, 0, 0);
@@ -45,7 +47,6 @@ public:
         pm->addParticle(neckSegments[1]);
 
         pm->addSpring(new Spring(base, torso, 4, 0.08, 0.01), false);
-        //pm->addSpring(new Spring(torso, head, 3, 0.08, 0.1));
         pm->addSpring(new Spring(torso, leftKnee, 2, 0.2, 0.2));
         pm->addSpring(new Spring(torso, rightKnee, 2, 0.2, 0.2));
         pm->addSpring(new Spring(leftKnee, leftFoot, 2, 0.2, 0.2));
@@ -62,7 +63,7 @@ public:
         controllerPosition += controllerVelocity;
 
         vec3 delta = controllerPosition - tailPosition;
-        float r = 0.5 / length(delta);
+        const float r = 0.5 / length(delta);
         tailPosition = controllerPosition - delta * r;
         delta = normalize(controllerPosition - tailPosition);
         bodyDirection.x = delta.x;
@@ -73,7 +74,7 @@ public:
         torso->setPosition(vec3(base->getPosition().x, torso->getPosition().y, base->getPosition().z));
         head->applyForce((bodyDirection * 0.03 + vec3(0, 0.02, 0)));
 
-        vec3 horizontalVelocity = vec3(controllerVelocity.x, 0, controllerVelocity.z);
+        const vec3 horizontalVelocity = vec3(controllerVelocity.x, 0, controllerVelocity.z);
         stride += length(horizontalVelocity);
 
         // Determine the length of a stride based on the current horizontal velocity
@@ -82,14 +83,12 @@ public:
 
         // Start a new stride with the opposite foot
         if (stride >= strideLength) {
-            vec3 footStraddleOffset = normalize(cross(horizontalVelocity, up)) * FOOT_STRADDLE_OFFSET;
-            vec3 footTarget = controllerPosition + normalize(horizontalVelocity) * (STRIDE_LENGTH_MIN + length(controllerVelocity) * 22);
+            const vec3 footStraddleOffset = normalize(cross(horizontalVelocity, up)) * FOOT_STRADDLE_OFFSET;
+            const vec3 footTarget = controllerPosition + normalize(horizontalVelocity) * (STRIDE_LENGTH_MIN + length(controllerVelocity) * 22);
 
             if (shouldMoveLeftFoot) {
-                // Play popping noise
                 rightFootTarget = footTarget + footStraddleOffset;
             } else {
-                // Play popping noise
                 leftFootTarget = footTarget - footStraddleOffset;
             }
 
@@ -98,8 +97,8 @@ public:
         }
 
         // Move feet toward their respective target positions
-        vec3 leftFootPosition = leftFoot->getPosition();
-        vec3 rightFootPosition = rightFoot->getPosition();
+        const vec3 leftFootPosition = leftFoot->getPosition();
+        const vec3 rightFootPosition = rightFoot->getPosition();
 
         leftFoot->setPosition(leftFootPosition + (leftFootTarget - leftFootPosition) * STEP_SPEED);
         rightFoot->setPosition(rightFootPosition + (rightFootTarget - rightFootPosition) * STEP_SPEED);

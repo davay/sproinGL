@@ -13,6 +13,7 @@ public:
 
     void update(double timeDelta, void*) override {
         timer -= timeDelta;
+        
         if (timer <= 0) {
             shouldDelete = true;
         }
