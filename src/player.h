@@ -93,7 +93,7 @@ public:
         if (mouseButtonState == GLFW_PRESS && !isMousePressed) {
             isMousePressed = true;
             vec3 bulletPosition = controllerPosition + vec3(0, 2, 0) + bodyDirection;
-            vec3 bulletVelocity = controllerVelocity + bodyDirection * 0.1 + vec3(0, 0.1, 0);
+            vec3 bulletVelocity = controllerVelocity + bodyDirection * 0.08 + vec3(0, 0.05, 0);
             Particle *bullet = new Particle(nullptr, -1, bulletPosition, 1, 0.4, 0.5, false, bulletVelocity);
             pm->addParticle(bullet);
         }
@@ -130,14 +130,6 @@ public:
     }
 
     void update(double timeDelta, void*) override {
-        if (isCoolingDown) {
-            collisionCooldown -= timeDelta;
-            if (collisionCooldown <= 0) {
-                isCoolingDown = false;
-                collisionCooldown = MAX_COLLISION_COOLDOWN;
-            }
-        }
-
         // Apply gravity
         controllerVelocity += vec3(0, -0.01, 0);
 
@@ -230,6 +222,22 @@ public:
             leftFoot->setForceExcemption(false);
             rightFoot->setForceExcemption(false);
         }
+
+        if (isCoolingDown) {
+            color = isCooldownFlash ? vec3(1.0, 0, 0) : vec3(0.3f, 0.7f, 0.0f);
+            cooldownFlashTimer += timeDelta;
+            if (cooldownFlashTimer >= MAX_COOLDOWN_FLASH_TIME) {
+                isCooldownFlash = !isCooldownFlash;
+                cooldownFlashTimer = 0;
+            }
+            collisionCooldown -= timeDelta;
+            if (collisionCooldown <= 0) {
+                isCoolingDown = false;
+                collisionCooldown = MAX_COLLISION_COOLDOWN;
+            }
+        } else {
+            color = vec3(0.3f, 0.7f, 0.0f);
+        }
     }
 
     void collideWith(void *thisCollider, void *otherCollider) override {
@@ -292,7 +300,7 @@ private:
     const float LEG_LENGTH = 2.1f;
 
     const int MAX_HEALTH = 10;
-    const float MAX_COLLISION_COOLDOWN = 2;
+    const float MAX_COLLISION_COOLDOWN = 1;
 
     vec3 controllerPosition;
     vec3 controllerVelocity;

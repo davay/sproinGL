@@ -102,7 +102,7 @@ public:
         }
 
         monkeyModel.setXform(player->getXform());
-        monkeyModel.setColor(vec3(0.3f, 0.7f, 0.0f));
+        monkeyModel.setColor(player->getColor());
         monkeyModel.draw(sceneShader);
 
         // Draw healthbar

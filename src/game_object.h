@@ -15,11 +15,15 @@ class GameObject {
         const int CENTIPEDE = 1;
         const int EMU = 2;
         const int BULLET = 3;
+        const float MAX_COOLDOWN_FLASH_TIME = 0.05f;
 
         int objectId;
         bool shouldBeDeleted;
         int health;
         float collisionCooldown;
+        float cooldownFlashTimer;
+        bool isCooldownFlash;
+
         bool isCoolingDown;
         vec3 color;
 };

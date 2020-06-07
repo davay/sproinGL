@@ -16,6 +16,7 @@ public:
     Centipede(PhysicsManager *pm, vec3 controllerPosition) {
         objectId = CENTIPEDE;
         color = vec3(1.0, 0.4, 0.5);
+        isCoolingDown = false;
 
         this->controllerPosition = controllerPosition;
         controllerDirection = vec3(0, 0, 1);
@@ -47,11 +48,19 @@ public:
         head->applyForce(force);
 
         if (isCoolingDown) {
+            color = isCooldownFlash ? vec3(1.0, 0, 0) : vec3(1.0, 0.4, 0.5);
+            cooldownFlashTimer += timeDelta;
+            if (cooldownFlashTimer >= MAX_COOLDOWN_FLASH_TIME) {
+                isCooldownFlash = !isCooldownFlash;
+                cooldownFlashTimer = 0;
+            }
             collisionCooldown -= timeDelta;
             if (collisionCooldown <= 0) {
                 isCoolingDown = false;
                 collisionCooldown = MAX_COLLISION_COOLDOWN;
             }
+        } else {
+            color = vec3(1.0, 0.4, 0.5);
         }
     }
 
@@ -67,13 +76,14 @@ public:
         if (otherObjectId == 0) {
             vec3 responseForce = (thisParticle->getPosition() - otherParticle->getPosition()) * 0.05f;
             thisParticle->applyForce(responseForce);
-            //health -= 5
+            health--;
+            isCoolingDown = true;
         }
 
         // Collision with bullet
-        if (otherObjectId == 3) {
-            vec3 positionDelta = thisParticle->getPosition() - otherParticle->getPosition();
-            thisParticle->applyForce(positionDelta * 1);
+        if (otherObjectId == -1) {
+            vec3 responseForce = (thisParticle->getPosition() - otherParticle->getPosition()) * 0.05f;
+            thisParticle->applyForce(responseForce);
             health--;
             isCoolingDown = true;
         }

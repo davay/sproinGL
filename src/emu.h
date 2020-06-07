@@ -106,9 +106,47 @@ public:
 
         leftFoot->setForceExcemption(true);
         rightFoot->setForceExcemption(true);
+
+        if (isCoolingDown) {
+            color = isCooldownFlash ? vec3(1.0, 0, 0) : vec3(0.7, 0.3, 0.2);
+            cooldownFlashTimer += timeDelta;
+            if (cooldownFlashTimer >= MAX_COOLDOWN_FLASH_TIME) {
+                isCooldownFlash = !isCooldownFlash;
+                cooldownFlashTimer = 0;
+            }
+            collisionCooldown -= timeDelta;
+            if (collisionCooldown <= 0) {
+                isCoolingDown = false;
+                collisionCooldown = MAX_COLLISION_COOLDOWN;
+            }
+        } else {
+            color = vec3(0.7, 0.3, 0.2);
+        }
     }
 
     void collideWith(void *thisCollider, void *otherCollider) override {
+        if (isCoolingDown) return;
+
+        Particle* thisParticle = static_cast<Particle*>(thisCollider);
+        Particle* otherParticle = static_cast<Particle*>(otherCollider);
+
+        int otherObjectId = otherParticle->getObjectId();
+
+        // Collision with player
+        if (otherObjectId == 0) {
+            vec3 responseForce = (thisParticle->getPosition() - otherParticle->getPosition()) * 0.05f;
+            thisParticle->applyForce(responseForce);
+            health--;
+            isCoolingDown = true;
+        }
+
+        // Collision with bullet
+        if (otherObjectId == -1) {
+            vec3 responseForce = (thisParticle->getPosition() - otherParticle->getPosition()) * 0.05f;
+            thisParticle->applyForce(responseForce);
+            health--;
+            isCoolingDown = true;
+        }
     }
 
 private:
@@ -117,6 +155,9 @@ private:
     const float STRIDE_LENGTH_MIN = 0.1f;
     const float STEP_SPEED = 0.6;
     const float FOOT_STRADDLE_OFFSET = 0.6;
+
+    const int MAX_HEALTH = 3;
+    const float MAX_COLLISION_COOLDOWN = 1;
 
     vec3 controllerPosition;
     vec3 controllerVelocity;
