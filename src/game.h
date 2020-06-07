@@ -9,6 +9,7 @@
 #include "physics_manager.h"
 #include "player.h"
 #include "spring.h"
+#include "text.h"
 
 #include "GLXtras.h"
 #include "Mesh.h"
@@ -18,6 +19,8 @@
 #include <glad.h>
 #include <GLFW/glfw3.h>
 
+
+#include <map>
 #include <vector>
 
 class Game {
@@ -30,6 +33,8 @@ public:
         , monkeyModel(vec3(0.3f, 0.7f, 0.0f))
     {
         this->window = window;
+        this->screenWidth = screenWidth;
+        this->screenHeight = screenHeight;
         sphereModel.read("./assets/sphere.obj");
         cubeModel.read("./assets/cube.obj");
         cylinderModel.read("./assets/cylinder.obj");
@@ -37,6 +42,7 @@ public:
 
         sceneShader = LinkProgramViaFile("./src/shaders/scene_vshader.txt", "./src/shaders/scene_fshader.txt");
         hudShader = LinkProgramViaFile("./src/shaders/hud_vshader.txt", "./src/shaders/hud_fshader.txt");
+        textShader = LinkProgramViaFile("./src/shaders/text_vshader.txt", "./src/shaders/text_fshader.txt");
 
         player = new Player(&pm, vec3(0, 0, 0));
         Emu *emu = new Emu(&pm, vec3(10, 0, 8));
@@ -46,6 +52,9 @@ public:
         gameObjects.push_back(emu);
         gameObjects.push_back(new Emu(&pm, vec3(10, 0, -8)));
         gameObjects.push_back(centipede);
+
+        // init fonts
+        initText(textShader, screenWidth, screenHeight, Characters, textVAO, textVBO);
     }
 
     void update(double timeDelta) {
@@ -104,13 +113,21 @@ public:
         cubeModel.setXform(Translate(0.0f, 0.98f, 0.0f) * Scale(player->getHealth() * 0.01, 0.02, 0.2));
         cubeModel.setColor(vec3(0.3f, 0.7f, 0.0f));
         cubeModel.draw(hudShader);
+
+        renderText(textShader, "This is sample text", 25.0f, 25.0f, 1.0f, vec3(0.5, 0.8f, 0.2f), Characters, textVAO, textVBO);
+        renderText(textShader, "(C) LearnOpenGL.com", 540.0f, 570.0f, 0.5f, vec3(0.3, 0.7f, 0.9f), Characters, textVAO, textVBO);
+       
     }
 
 private:
     GLFWwindow *window;
-    int sceneShader, hudShader;
-
+    int screenWidth, screenHeight;
+    int sceneShader, hudShader, textShader;
+    unsigned int textVAO, textVBO;
     Model sphereModel, cubeModel, cylinderModel, monkeyModel;
+
+
+    std::map<GLchar, Character> Characters;
 
     PhysicsManager pm;
     GameCamera gameCamera;
