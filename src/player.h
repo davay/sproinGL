@@ -20,6 +20,8 @@ public:
     Player(PhysicsManager *pm, vec3 controllerPosition) {
         objectId = PLAYER;
         health = MAX_HEALTH;
+        collisionCooldown = MAX_COLLISION_COOLDOWN;
+        color = vec3(0.3f, 0.7f, 0.0f);
 
         // Set up controller
         this->controllerPosition = controllerPosition;
@@ -91,7 +93,7 @@ public:
         if (mouseButtonState == GLFW_PRESS && !isMousePressed) {
             isMousePressed = true;
             vec3 bulletPosition = controllerPosition + vec3(0, 2, 0) + bodyDirection;
-            vec3 bulletVelocity = bodyDirection * 0.2 + vec3(0, 0.1, 0);
+            vec3 bulletVelocity = controllerVelocity + bodyDirection * 0.1 + vec3(0, 0.1, 0);
             Particle *bullet = new Particle(nullptr, -1, bulletPosition, 1, 0.4, 0.5, false, bulletVelocity);
             pm->addParticle(bullet);
         }
@@ -128,6 +130,14 @@ public:
     }
 
     void update(double timeDelta, void*) override {
+        if (isCoolingDown) {
+            collisionCooldown -= timeDelta;
+            if (collisionCooldown <= 0) {
+                isCoolingDown = false;
+                collisionCooldown = MAX_COLLISION_COOLDOWN;
+            }
+        }
+
         // Apply gravity
         controllerVelocity += vec3(0, -0.01, 0);
 
@@ -223,11 +233,14 @@ public:
     }
 
     void collideWith(void *thisCollider, void *otherCollider) override {
+        if (isCoolingDown) return;
+
         Particle *thisParticle = static_cast<Particle*>(thisCollider);
         Particle *otherParticle = static_cast<Particle*>(otherCollider);
 
         int otherObjectId = otherParticle->getObjectId();
 
+        // Centipede collision
         if (otherObjectId == 1) {
             vec3 responseVelocity = (torso->getPosition() - otherParticle->getPosition()) * 0.05f;
             responseVelocity.y = 0.1f;
@@ -235,7 +248,8 @@ public:
             base->setVelocity(responseVelocity);
             torso->setVelocity(responseVelocity);
             isOnGround = false;
-            health -= 2;
+            health--;
+            isCoolingDown = true;
         }
     }
 
@@ -259,6 +273,7 @@ public:
     vec3 getControllerPosition() { return controllerPosition; }
     vec3 getLookDirection() { return lookDirection; }
     int getHealth() { return health; }
+    vec3 getColor() { return color; }
 
 private:
     const float CONTROLLER_RADIUS = 0.5f;
@@ -286,7 +301,6 @@ private:
     vec3 lookDirection;
     double lastMouseX, lastMouseY;
     bool isMoving, isOnGround, isMousePressed;
-    int health;
 
     vec3 tailPosition;
     vec3 bodyDirection;

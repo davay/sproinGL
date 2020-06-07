@@ -15,6 +15,7 @@ class Emu: public GameObject {
 public:
     Emu(PhysicsManager *pm, vec3 controllerPosition) {
         objectId = EMU;
+        color = vec3(0.7, 0.3, 0.2);
 
         up = vec3(0, 1, 0);
         this->controllerPosition = controllerPosition;

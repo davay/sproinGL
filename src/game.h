@@ -44,7 +44,6 @@ public:
 
         gameObjects.push_back(player);
         gameObjects.push_back(emu);
-        gameObjects.push_back(new Emu(&pm, vec3(10, 0, -8)));
         gameObjects.push_back(centipede);
     }
 
@@ -82,7 +81,14 @@ public:
         for (int i = 0; i < visibleParticles->size(); i++) {
             Particle* particle = (*visibleParticles)[i];
             sphereModel.setXform(particle->getXform());
-            sphereModel.setColor(vec3(1.0f, 0.5f, 0.2f));
+
+            if (particle->getOwner() != nullptr) {
+                GameObject *owner = particle->getOwner();
+                sphereModel.setColor(owner->getColor());
+            } else {
+                sphereModel.setColor(vec3(1.0f, 0.5f, 0.2f));
+            }
+
             sphereModel.draw(sceneShader);
         }
 

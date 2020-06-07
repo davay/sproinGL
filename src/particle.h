@@ -70,6 +70,7 @@ public:
     vec3 getVelocity() { return velocity; }
     float getRadius() { return radius; }
     int getObjectId() { return objectId; }
+    GameObject* getOwner() { return owner; }
 
 private:
     static constexpr float DEFAULT_DAMPING = 0.9f;
