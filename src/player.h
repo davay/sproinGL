@@ -19,7 +19,9 @@ class Player: public GameObject {
 public:
     Player(PhysicsManager *pm, vec3 controllerPosition) {
         objectId = PLAYER;
+        health = MAX_HEALTH;
 
+        // Set up controller
         this->controllerPosition = controllerPosition;
         controllerVelocity = vec3(0, 0, 0);
         lookDirection = vec3(0, 0, 1);
@@ -30,9 +32,7 @@ public:
         shouldMoveLeftFoot = true;
         stride = 0;
 
-        health = MAX_HEALTH;
-
-        // Define physics components
+        // Set up physics components
         base = new Particle(this, objectId, controllerPosition, 1, FOOT_RADIUS);
         torso = new Particle(this, objectId, controllerPosition + vec3(0, HEIGHT, 0), 1, 0.5);
         leftHand = new Particle(this, objectId, controllerPosition + vec3(ARM_LENGTH, HEIGHT, 0), 1.5, HAND_RADIUS);
@@ -90,7 +90,9 @@ public:
         int mouseButtonState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
         if (mouseButtonState == GLFW_PRESS && !isMousePressed) {
             isMousePressed = true;
-            Particle *bullet = new Particle(nullptr, -1, controllerPosition + vec3(0, 2, 0) + bodyDirection, 1, 0.4, 0.5, false, bodyDirection * 0.4);
+            vec3 bulletPosition = controllerPosition + vec3(0, 2, 0) + bodyDirection;
+            vec3 bulletVelocity = bodyDirection * 0.2 + vec3(0, 0.1, 0);
+            Particle *bullet = new Particle(nullptr, -1, bulletPosition, 1, 0.4, 0.5, false, bulletVelocity);
             pm->addParticle(bullet);
         }
 
@@ -274,7 +276,8 @@ private:
     const float ARM_LENGTH = 1.2f;
     const float LEG_LENGTH = 2.1f;
 
-    const int MAX_HEALTH = 100;
+    const int MAX_HEALTH = 10;
+    const float MAX_COLLISION_COOLDOWN = 2;
 
     vec3 controllerPosition;
     vec3 controllerVelocity;

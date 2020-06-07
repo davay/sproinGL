@@ -44,6 +44,7 @@ public:
 
         gameObjects.push_back(player);
         gameObjects.push_back(emu);
+        gameObjects.push_back(new Emu(&pm, vec3(10, 0, -8)));
         gameObjects.push_back(centipede);
     }
 

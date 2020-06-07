@@ -15,6 +15,8 @@ class GameObject {
 
         int objectId;
         bool shouldDelete;
+        int health;
+        float collisionCooldown;
 };
 
 #endif
