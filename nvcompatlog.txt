@@ -1,0 +1,4 @@
+glEnableVertexAttribArray (No VAO is bound as required in GL Core Profile)
+glVertexAttribPointer (No VAO is bound as required in GL Core Profile)
+                            glDrawArrays (mode = 0x00000007)
+Trying to draw without a vertex array object bound is only valid in the compatibility profile.

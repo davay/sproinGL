@@ -7,6 +7,8 @@
 #include "Text.h"
 #include <map>
 #include <stdio.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 // if FreeType not linked, comment next line:
 #define FREETYPE_OK
@@ -16,9 +18,6 @@ void Text(int x, int y, vec3 color, float scale, const char *format, ...) { }
 void Text(vec3 p, mat4 m, vec3 color, float scale, const char *format, ...) { }
 void RenderText(const char *text, float x, float y, vec3 color, float scale, mat4 view) { }
 #else
-
-#include <freetype2/ft2build.h>
-#include <freetype.h> // FT_FREETYPE_H
 
 using std::string;
 
@@ -81,7 +80,7 @@ CharacterSet *SetFont(const char *fontName, int charRes, int pixelRes) {
 }
 
 static const char *textVertexShader = "\
-    #version 130                                    \n\
+    #version 410 core                               \n\
     in vec4 point;                                  \n\
     out vec2 vUv;                                   \n\
     uniform mat4 view;                              \n\
@@ -91,7 +90,7 @@ static const char *textVertexShader = "\
     }                                               \n";
 
 static const char *textPixelShader = "\
-    #version 130                                    \n\
+    #version 410 core                                   \n\
     in vec2 vUv;                                    \n\
     out vec4 pColor;                                \n\
     uniform sampler2D textureImage;                 \n\
@@ -106,7 +105,7 @@ void RenderText(const char *text, float x, float y, vec3 color, float scale, mat
         textShaderProgram = LinkProgramViaCode(&textVertexShader, &textPixelShader);
     glUseProgram(textShaderProgram);
     if (!currentFont) {
-        SetFont("C:/Fonts/OpenSans/OpenSans-Regular.ttf", 15, 30);  // unsure exact effect of charRes, pixelRes
+        SetFont("./fonts/Monkey.ttf", 15, 30);  // unsure exact effect of charRes, pixelRes
         return;
     }
     scale /= (float) currentFont->charRes;
@@ -150,7 +149,7 @@ void RenderText(const char *text, float x, float y, vec3 color, float scale, mat
     if (format) {                                      \
         va_list ap;                                    \
         va_start(ap, format);                          \
-        _vsnprintf(buffer, maxBufferSize, format, ap); \
+        vsnprintf(buffer, maxBufferSize, format, ap); \
         va_end(ap);                                    \
     }                                                  \
 }
@@ -160,7 +159,7 @@ float TextWidth(float scale, const char *format, ...) {
     char text[500];
     FormatString(text, 500, format);
     if (!currentFont)
-        SetFont("C:/Fonts/OpenSans/OpenSans-Regular.ttf", 15, 30);  // unsure exact affect of charRes, pixelRes
+        SetFont("./fonts/Monkey.ttf", 15, 30);  // unsure exact affect of charRes, pixelRes
     if (currentFont != NULL) {
         scale /= (float) currentFont->charRes;
         for (const char* c = text; *c; c++) {
