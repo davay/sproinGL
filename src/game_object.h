@@ -17,7 +17,7 @@ class GameObject {
         const int CENTIPEDE = 1;
         const int EMU = 2;
         const int BULLET = 3;
-        const float MAX_COOLDOWN_FLASH_TIME = 0.05f;
+        const float MAX_COOLDOWN_FLASH_TIME = 0.08f;
 
         int objectId;
         bool shouldBeDeleted;

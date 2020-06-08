@@ -16,6 +16,7 @@ public:
     Centipede(PhysicsManager *pm, vec3 controllerPosition) {
         objectId = CENTIPEDE;
         color = vec3(1.0, 0.4, 0.5);
+
         health = MAX_HEALTH;
         collisionCooldown = MAX_COLLISION_COOLDOWN;
         isCoolingDown = false;

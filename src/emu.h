@@ -15,13 +15,18 @@ class Emu: public GameObject {
 public:
     Emu(PhysicsManager *pm, vec3 controllerPosition) {
         objectId = EMU;
-        color = vec3(0.7, 0.3, 0.2);
+        color = vec3(0.6, 0.3, 0.2);
+
+        health = MAX_HEALTH;
+        collisionCooldown = MAX_COLLISION_COOLDOWN;
+        isCoolingDown = false;
+        cooldownFlashTimer = 0;
+        isCooldownFlash = false;
 
         up = vec3(0, 1, 0);
-        this->controllerPosition = controllerPosition;
+        this->controllerPosition = controllerPosition + vec3(0, 0.4, 0);
         controllerVelocity = vec3(0, 0, 0);
         targetPosition = vec3(rand() % 40 - 20, 0, rand() % 40 - 20);
-        printf("%f %f %f\n", targetPosition.x, targetPosition.y, targetPosition.z);
         tailPosition = controllerPosition - vec3(0, 0, 1);
         leftFootTarget = controllerPosition + vec3(FOOT_STRADDLE_OFFSET, 0, 0);
         rightFootTarget = controllerPosition + vec3(-FOOT_STRADDLE_OFFSET, 0, 0);
@@ -29,7 +34,7 @@ public:
         stride = 0;
 
         base = new Particle(this, objectId, controllerPosition, 1, 0.4);
-        torso = new Particle(this, objectId, controllerPosition + vec3(0, 4, 0), 1, 1.5);
+        torso = new Particle(this, objectId, controllerPosition + vec3(0, 4, 0), 1, 1);
         head = new Particle(this, objectId, controllerPosition + vec3(0, 7, 0), 1, 0.5);
         leftFoot = new Particle(this, objectId, controllerPosition + vec3(1, 0, 0), 1, 0.4);
         rightFoot = new Particle(this, objectId, controllerPosition + vec3(-1, 0, 0), 1, 0.4);
@@ -49,14 +54,14 @@ public:
         pm->addParticle(neckSegments[0]);
         pm->addParticle(neckSegments[1]);
 
-        pm->addSpring(new Spring(base, torso, 4, 0.08, 0.01), false);
-        pm->addSpring(new Spring(torso, leftKnee, 2, 0.2, 0.2));
-        pm->addSpring(new Spring(torso, rightKnee, 2, 0.2, 0.2));
-        pm->addSpring(new Spring(leftKnee, leftFoot, 2, 0.2, 0.2));
-        pm->addSpring(new Spring(rightKnee, rightFoot, 2, 0.2, 0.2));
-        pm->addSpring(new Spring(torso, neckSegments[0], 1, 0.2, 0.2));
-        pm->addSpring(new Spring(neckSegments[0], neckSegments[1], 1, 0.2, 0.2));
-        pm->addSpring(new Spring(neckSegments[1], head, 1, 0.2, 0.2));
+        pm->addSpring(new Spring(base, torso, 3, 0.08, 0.01), false);
+        pm->addSpring(new Spring(torso, leftKnee, 1.5, 0.2, 0.2));
+        pm->addSpring(new Spring(torso, rightKnee, 1.5, 0.2, 0.2));
+        pm->addSpring(new Spring(leftKnee, leftFoot, 1.5, 0.2, 0.2));
+        pm->addSpring(new Spring(rightKnee, rightFoot, 1.5, 0.2, 0.2));
+        pm->addSpring(new Spring(torso, neckSegments[0], 0.6, 0.2, 0.2));
+        pm->addSpring(new Spring(neckSegments[0], neckSegments[1], 0.6, 0.2, 0.2));
+        pm->addSpring(new Spring(neckSegments[1], head, 0.6, 0.2, 0.2));
     }
 
     void update(double timeDelta, void* playerPtr) override {
@@ -123,7 +128,7 @@ public:
         rightFoot->setForceExcemption(true);
 
         if (isCoolingDown) {
-            color = isCooldownFlash ? vec3(1.0, 0, 0) : vec3(0.7, 0.3, 0.2);
+            color = isCooldownFlash ? vec3(1.0, 0, 0) : vec3(0.6, 0.3, 0.2);
             cooldownFlashTimer += timeDelta;
             if (cooldownFlashTimer >= MAX_COOLDOWN_FLASH_TIME) {
                 isCooldownFlash = !isCooldownFlash;
@@ -135,7 +140,7 @@ public:
                 collisionCooldown = MAX_COLLISION_COOLDOWN;
             }
         } else {
-            color = vec3(0.7, 0.3, 0.2);
+            color = vec3(0.6, 0.3, 0.2);
         }
     }
 
@@ -149,7 +154,7 @@ public:
 
         // Collision with player
         if (otherObjectId == 0) {
-            vec3 responseForce = (thisParticle->getPosition() - otherParticle->getPosition()) * 0.5f;
+            vec3 responseForce = (thisParticle->getPosition() - otherParticle->getPosition()) * 0.05f;
             thisParticle->applyForce(responseForce);
             health--;
             isCoolingDown = true;
@@ -157,10 +162,27 @@ public:
 
         // Collision with bullet
         if (otherObjectId == -1) {
-            vec3 responseForce = (thisParticle->getPosition() - otherParticle->getPosition()) * 0.5f;
+            vec3 responseForce = (thisParticle->getPosition() - otherParticle->getPosition()) * 0.05f;
             thisParticle->applyForce(responseForce);
             health--;
             isCoolingDown = true;
+        }
+
+        if (health < 0) {
+            shouldBeDeleted = true;
+            controllerPosition = vec3(1000, 0, -100);
+            leftFootTarget = vec3(1000, 0, -100);
+            rightFootTarget = vec3(1000, 0, -100);
+            base->setPosition(vec3(1000, 0, -100));
+            torso->setPosition(vec3(1000, 0, -100));
+            head->setPosition(vec3(1000, 0, -100));
+            leftFoot->setPosition(vec3(1000, 0, -100));
+            rightFoot->setPosition(vec3(1000, 0, -100));
+            leftKnee->setPosition(vec3(1000, 0, -100));
+            rightKnee->setPosition(vec3(1000, 0, -100));
+            for (int i = 0; i < neckSegments.size(); i++) {
+                neckSegments[i]->setPosition(vec3(1000, 0, -100));
+            }
         }
     }
 
