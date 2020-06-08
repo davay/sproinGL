@@ -170,7 +170,6 @@ public:
         }
 
         if (health < 0) {
-            shouldBeDeleted = true;
             controllerPosition = vec3(1000, 0, -100);
             leftFootTarget = vec3(1000, 0, -100);
             rightFootTarget = vec3(1000, 0, -100);

@@ -95,7 +95,6 @@ public:
         }
 
         if (health < 0) {
-            shouldBeDeleted = true;
             for (int i = 0; i < bodySegments.size(); i++) {
                 bodySegments[i]->setPosition(vec3(0, 0, -100));
             }

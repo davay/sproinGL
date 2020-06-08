@@ -9,7 +9,6 @@ class GameObject {
         virtual void update(double, void*) = 0;
         virtual void collideWith(void*, void*) = 0;
         virtual vec3 getColor() { return color; }
-        virtual bool getShouldBeDeleted() { return shouldBeDeleted; }
         virtual ~GameObject() { };
 
     protected:
@@ -20,7 +19,6 @@ class GameObject {
         const float MAX_COOLDOWN_FLASH_TIME = 0.08f;
 
         int objectId;
-        bool shouldBeDeleted;
         int health;
         float collisionCooldown;
         float cooldownFlashTimer;

@@ -44,12 +44,7 @@ public:
         srand(time(NULL));
 
         player = new Player(&pm, vec3(0, 0, 0));
-        //Emu *emu = new Emu(&pm, vec3(10, 0, 8));
-        Centipede *centipede = new Centipede(&pm, vec3(-10, 0, 8));
-
         gameObjects.push_back(player);
-        //gameObjects.push_back(emu);
-        gameObjects.push_back(centipede);
     }
 
     void update(double timeDelta) {
