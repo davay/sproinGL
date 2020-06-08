@@ -20,6 +20,8 @@ public:
         up = vec3(0, 1, 0);
         this->controllerPosition = controllerPosition;
         controllerVelocity = vec3(0, 0, 0);
+        targetPosition = vec3(rand() % 40 - 20, 0, rand() % 40 - 20);
+        printf("%f %f %f\n", targetPosition.x, targetPosition.y, targetPosition.z);
         tailPosition = controllerPosition - vec3(0, 0, 1);
         leftFootTarget = controllerPosition + vec3(FOOT_STRADDLE_OFFSET, 0, 0);
         rightFootTarget = controllerPosition + vec3(-FOOT_STRADDLE_OFFSET, 0, 0);
@@ -59,7 +61,20 @@ public:
 
     void update(double timeDelta, void* playerPtr) override {
         Player* player = static_cast<Player*>(playerPtr);
-        controllerVelocity = normalize(player->getControllerPosition() - base->getPosition()) * MAX_SPEED;
+
+        isTargetingPlayer = length(controllerPosition - player->getControllerPosition()) < 12;
+
+        if (isTargetingPlayer) {
+            targetPosition = player->getControllerPosition();
+        } else {
+            timeToSwitchTarget -= timeDelta;
+            if (timeToSwitchTarget <= 0) {
+                targetPosition = vec3(rand() % 40 - 20, 0, rand() % 40 - 20);
+                timeToSwitchTarget = 2 + rand() % 5;
+            }
+        }
+
+        controllerVelocity = normalize(targetPosition - base->getPosition()) * MAX_SPEED;
         controllerVelocity.y = 0;
         controllerPosition += controllerVelocity;
 
@@ -79,13 +94,13 @@ public:
         stride += length(horizontalVelocity);
 
         // Determine the length of a stride based on the current horizontal velocity
-        strideLength = length(horizontalVelocity) * 20.0;
+        strideLength = length(horizontalVelocity) * 19.0;
         if (strideLength < 0.6) strideLength = 0.6;
 
         // Start a new stride with the opposite foot
         if (stride >= strideLength) {
             const vec3 footStraddleOffset = normalize(cross(horizontalVelocity, up)) * FOOT_STRADDLE_OFFSET;
-            const vec3 footTarget = controllerPosition + normalize(horizontalVelocity) * (STRIDE_LENGTH_MIN + length(controllerVelocity) * 22);
+            const vec3 footTarget = controllerPosition + normalize(horizontalVelocity) * (STRIDE_LENGTH_MIN + length(controllerVelocity) * 21);
 
             if (shouldMoveLeftFoot) {
                 rightFootTarget = footTarget + footStraddleOffset;
@@ -134,7 +149,7 @@ public:
 
         // Collision with player
         if (otherObjectId == 0) {
-            vec3 responseForce = (thisParticle->getPosition() - otherParticle->getPosition()) * 0.05f;
+            vec3 responseForce = (thisParticle->getPosition() - otherParticle->getPosition()) * 0.5f;
             thisParticle->applyForce(responseForce);
             health--;
             isCoolingDown = true;
@@ -142,7 +157,7 @@ public:
 
         // Collision with bullet
         if (otherObjectId == -1) {
-            vec3 responseForce = (thisParticle->getPosition() - otherParticle->getPosition()) * 0.05f;
+            vec3 responseForce = (thisParticle->getPosition() - otherParticle->getPosition()) * 0.5f;
             thisParticle->applyForce(responseForce);
             health--;
             isCoolingDown = true;
@@ -151,7 +166,6 @@ public:
 
 private:
     const float MAX_SPEED = 0.10f;
-    const float STRIDE_LENGTH = 2.5f;
     const float STRIDE_LENGTH_MIN = 0.1f;
     const float STEP_SPEED = 0.6;
     const float FOOT_STRADDLE_OFFSET = 0.6;
@@ -161,12 +175,15 @@ private:
 
     vec3 controllerPosition;
     vec3 controllerVelocity;
+    vec3 targetPosition;
     vec3 up;
     vec3 tailPosition;
     vec3 bodyDirection;
     vec3 leftFootTarget, rightFootTarget;
     float stride, strideLength;
     bool shouldMoveLeftFoot;
+    bool isTargetingPlayer;
+    float timeToSwitchTarget = 5;
 
     Particle *base;
     Particle *torso;

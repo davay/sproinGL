@@ -46,7 +46,7 @@ public:
     }
 
     void collideWith(Particle *other) {
-        if (owner != nullptr)
+        if (owner != nullptr && owner != other->getOwner())
             owner->collideWith(this, other);
     }
 

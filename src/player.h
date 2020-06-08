@@ -19,9 +19,13 @@ class Player: public GameObject {
 public:
     Player(PhysicsManager *pm, vec3 controllerPosition) {
         objectId = PLAYER;
+        color = vec3(0.3f, 0.7f, 0.0f);
+
         health = MAX_HEALTH;
         collisionCooldown = MAX_COLLISION_COOLDOWN;
-        color = vec3(0.3f, 0.7f, 0.0f);
+        isCoolingDown = false;
+        cooldownFlashTimer = 0;
+        isCooldownFlash = false;
 
         // Set up controller
         this->controllerPosition = controllerPosition;
@@ -93,8 +97,8 @@ public:
         if (mouseButtonState == GLFW_PRESS && !isMousePressed) {
             isMousePressed = true;
             vec3 bulletPosition = controllerPosition + vec3(0, 2, 0) + bodyDirection;
-            vec3 bulletVelocity = controllerVelocity + bodyDirection * 0.08 + vec3(0, 0.05, 0);
-            Particle *bullet = new Particle(nullptr, -1, bulletPosition, 1, 0.4, 0.5, false, bulletVelocity);
+            vec3 bulletVelocity = bodyDirection * 0.4 + vec3(0, 0.02, 0);
+            Particle *bullet = new Particle(nullptr, -1, bulletPosition, 1, 0.6, 0.5, false, bulletVelocity);
             pm->addParticle(bullet);
         }
 
@@ -278,10 +282,13 @@ public:
         return Translate(torso->getPosition()) * t * Scale(0.8, 0.8, 0.8);
     }
 
+    ~Player() {
+
+    }
+
     vec3 getControllerPosition() { return controllerPosition; }
     vec3 getLookDirection() { return lookDirection; }
     int getHealth() { return health; }
-    vec3 getColor() { return color; }
 
 private:
     const float CONTROLLER_RADIUS = 0.5f;

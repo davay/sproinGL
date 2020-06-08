@@ -16,23 +16,29 @@ public:
     Centipede(PhysicsManager *pm, vec3 controllerPosition) {
         objectId = CENTIPEDE;
         color = vec3(1.0, 0.4, 0.5);
+        health = MAX_HEALTH;
+        collisionCooldown = MAX_COLLISION_COOLDOWN;
         isCoolingDown = false;
+        cooldownFlashTimer = 0;
+        isCooldownFlash = false;
 
         this->controllerPosition = controllerPosition;
         controllerDirection = vec3(0, 0, 1);
         controllerVelocity = vec3(0.1, 0, 0);
 
-        head = new Particle(this, objectId, vec3(controllerPosition), 1, 1, 0.95, false);
+        head = new Particle(this, objectId, vec3(controllerPosition), 1, 0.8, 0.95, false);
         pm->addParticle(head);
 
         Particle *prevMadeParticle = head;
+        bodySegments.push_back(head);
         for (int i = 1; i < NUM_BODY_SEGMENTS; i++) {
             Particle *nextParticle = new Particle(
-                this, objectId, vec3(controllerPosition - controllerDirection * 2.5 * i), 1, 1, 0.95
+                this, objectId, vec3(controllerPosition - controllerDirection * 2.5 * i), 1, 0.8, 0.95
             );
             pm->addParticle(nextParticle);
             pm->addSpring(new Spring(prevMadeParticle, nextParticle, 2.5, 0.01, 0.001));
             prevMadeParticle = nextParticle;
+            bodySegments.push_back(nextParticle);
         }
     }
 
@@ -87,11 +93,18 @@ public:
             health--;
             isCoolingDown = true;
         }
+
+        if (health < 0) {
+            shouldBeDeleted = true;
+            for (int i = 0; i < bodySegments.size(); i++) {
+                bodySegments[i]->setPosition(vec3(0, 0, -100));
+            }
+        }
     }
 
 private:
     const int NUM_BODY_SEGMENTS = 6;
-    const int MAX_HEALTH = 5;
+    const int MAX_HEALTH = 1;
     const float MAX_COLLISION_COOLDOWN = 1;
 
     vec3 controllerPosition;
@@ -99,6 +112,7 @@ private:
     vec3 controllerVelocity;
 
     Particle *head;
+    std::vector<Particle*> bodySegments;
 };
 
 #endif

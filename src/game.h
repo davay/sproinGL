@@ -18,6 +18,8 @@
 #include <glad.h>
 #include <GLFW/glfw3.h>
 
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
 #include <vector>
 
 class Game {
@@ -38,16 +40,35 @@ public:
         sceneShader = LinkProgramViaFile("./src/shaders/scene_vshader.txt", "./src/shaders/scene_fshader.txt");
         hudShader = LinkProgramViaFile("./src/shaders/hud_vshader.txt", "./src/shaders/hud_fshader.txt");
 
+        srand(time(NULL));
+
         player = new Player(&pm, vec3(0, 0, 0));
-        Emu *emu = new Emu(&pm, vec3(10, 0, 8));
+        //Emu *emu = new Emu(&pm, vec3(10, 0, 8));
         Centipede *centipede = new Centipede(&pm, vec3(-10, 0, 8));
 
         gameObjects.push_back(player);
-        gameObjects.push_back(emu);
+        //gameObjects.push_back(emu);
         gameObjects.push_back(centipede);
     }
 
     void update(double timeDelta) {
+
+        timeToSpawnEnemy -= timeDelta;
+        if (timeToSpawnEnemy <= 0) {
+            vec3 spawnPosition = vec3(rand() % 40 - 20, 0, rand() % 40 - 20);
+            while (length(spawnPosition - player->getControllerPosition()) < 5) {
+                spawnPosition = vec3(rand() % 40 - 20, 0, rand() % 40 - 20);
+            }
+
+            if (rand() % 5 < 2) {
+                gameObjects.push_back(new Centipede(&pm, spawnPosition));
+            } else {
+                gameObjects.push_back(new Emu(&pm, spawnPosition));
+            }
+
+            timeToSpawnEnemy = rand() % 5 + 5;
+        }
+
         // Update physics
         pm.update(timeDelta);
 
@@ -56,6 +77,12 @@ public:
         // Update entities
         for (int i = 0; i < gameObjects.size(); i++) {
             gameObjects[i]->update(timeDelta, player);
+        }
+
+        // Delete flagged entities
+        for (int i = gameObjects.size() - 1; i >= 0; i--) {
+            if (gameObjects[i]->getShouldBeDeleted()) {
+            }
         }
 
         gameCamera.update(timeDelta, player);
@@ -124,6 +151,8 @@ private:
     std::vector<GameObject*> gameObjects;
 
     Player *player;
+
+    float timeToSpawnEnemy = 5;
 };
 
 #endif

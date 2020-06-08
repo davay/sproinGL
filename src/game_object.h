@@ -9,6 +9,8 @@ class GameObject {
         virtual void update(double, void*) = 0;
         virtual void collideWith(void*, void*) = 0;
         virtual vec3 getColor() { return color; }
+        virtual bool getShouldBeDeleted() { return shouldBeDeleted; }
+        virtual ~GameObject() { };
 
     protected:
         const int PLAYER = 0;
