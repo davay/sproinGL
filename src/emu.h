@@ -71,15 +71,16 @@ public:
 
         if (isTargetingPlayer) {
             targetPosition = player->getControllerPosition();
+            controllerVelocity = normalize(targetPosition - base->getPosition()) * MAX_SPEED;
         } else {
             timeToSwitchTarget -= timeDelta;
             if (timeToSwitchTarget <= 0) {
                 targetPosition = vec3(rand() % 40 - 20, 0, rand() % 40 - 20);
                 timeToSwitchTarget = 2 + rand() % 5;
             }
+            controllerVelocity = normalize(targetPosition - base->getPosition()) * MAX_SPEED * 0.6;
         }
 
-        controllerVelocity = normalize(targetPosition - base->getPosition()) * MAX_SPEED;
         controllerVelocity.y = 0;
         controllerPosition += controllerVelocity;
 
@@ -154,7 +155,7 @@ public:
 
         // Collision with player
         if (otherObjectId == 0) {
-            vec3 responseForce = (thisParticle->getPosition() - otherParticle->getPosition()) * 0.05f;
+            vec3 responseForce = (thisParticle->getPosition() - otherParticle->getPosition()) * 0.1f;
             thisParticle->applyForce(responseForce);
             health--;
             isCoolingDown = true;
@@ -162,7 +163,7 @@ public:
 
         // Collision with bullet
         if (otherObjectId == -1) {
-            vec3 responseForce = (thisParticle->getPosition() - otherParticle->getPosition()) * 0.05f;
+            vec3 responseForce = (thisParticle->getPosition() - otherParticle->getPosition()) * 0.1f;
             thisParticle->applyForce(responseForce);
             health--;
             isCoolingDown = true;

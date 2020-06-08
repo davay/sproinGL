@@ -267,6 +267,18 @@ public:
             health--;
             isCoolingDown = true;
         }
+
+        // Emu collision
+        if (otherObjectId == 2) {
+            vec3 responseVelocity = (torso->getPosition() - otherParticle->getPosition()) * 0.05f;
+            responseVelocity.y = 0.1f;
+            controllerVelocity = responseVelocity;
+            base->setVelocity(responseVelocity);
+            torso->setVelocity(responseVelocity);
+            isOnGround = false;
+            health--;
+            isCoolingDown = true;
+        }
     }
 
     mat4 getXform() {

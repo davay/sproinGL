@@ -33,7 +33,11 @@ public:
         // Centipede collision
         if (otherObjectId == 1) {
             health--;
-            printf("dfsfsdfsf\n");
+        }
+
+        // Centipede collision
+        if (otherObjectId == 2) {
+            health--;
         }
 
         if (health <= 0) {
