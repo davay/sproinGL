@@ -1,30 +1,53 @@
+#ifndef BULLET_H
+#define BULLET_H
+
 #include "particle.h"
 
 #include "VecMat.h"
 
 class Bullet: public GameObject {
 public:
-    Bullet(vec3 position, vec3 velocity)
-    : particle(this, BULLET, position, 1, 0.4, 0.1, false, velocity)
-    {
+    Bullet(vec3 position, vec3 velocity) {
         objectId = BULLET;
-        timer = DELETE_TIME;
+        color = vec3(1, 1, 1);
+
+        health = MAX_HEALTH;
+        collisionCooldown = MAX_COLLISION_COOLDOWN;
+        isCoolingDown = false;
+        cooldownFlashTimer = 0;
+        isCooldownFlash = false;
+
+        particle = new Particle(this, 0, position, 1, 0.4, 0.9, false, velocity);
     }
 
     void update(double timeDelta, void*) override {
-        timer -= timeDelta;
-        
-        if (timer <= 0) {
-            shouldDelete = true;
-        }
+
     }
 
     void collideWith(void *thisCollider, void *otherCollider) override {
+        Particle* thisParticle = static_cast<Particle*>(thisCollider);
+        Particle* otherParticle = static_cast<Particle*>(otherCollider);
+
+        int otherObjectId = otherParticle->getObjectId();
+
+        // Centipede collision
+        if (otherObjectId == 1) {
+            health--;
+            printf("dfsfsdfsf\n");
+        }
+
+        if (health <= 0) {
+            particle->setPosition(vec3(0, 0, -100));
+        }
     }
 
-private:
-    const int DELETE_TIME = 5;
+    Particle* getParticle() { return particle; }
 
-    float timer;
-    Particle particle;
+private:
+    const int MAX_HEALTH = 1;
+    const float MAX_COLLISION_COOLDOWN = 0;
+
+    Particle *particle;
 };
+
+#endif

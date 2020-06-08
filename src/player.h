@@ -1,6 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include "bullet.h"
 #include "game_object.h"
 #include "particle.h"
 #include "physics_manager.h"
@@ -60,7 +61,9 @@ public:
         pm->addSpring(new Spring(torso, rightFoot, LEG_LENGTH, 0.04, 0.1));
     }
 
-    void input(GLFWwindow *window, PhysicsManager *pm) {
+    Bullet* input(GLFWwindow *window, PhysicsManager *pm) {
+        Bullet *bullet = nullptr;
+
         isMoving = false;
 
         // Keyboard input for movement
@@ -98,8 +101,7 @@ public:
             isMousePressed = true;
             vec3 bulletPosition = controllerPosition + vec3(0, 2, 0) + bodyDirection;
             vec3 bulletVelocity = bodyDirection * 0.4 + vec3(0, 0.02, 0);
-            Particle *bullet = new Particle(nullptr, -1, bulletPosition, 1, 0.6, 0.5, false, bulletVelocity);
-            pm->addParticle(bullet);
+            bullet = new Bullet(bulletPosition, bulletVelocity);
         }
 
         if (mouseButtonState == GLFW_RELEASE) {
@@ -131,6 +133,8 @@ public:
         );
 
         lookDirection = normalize(direction);
+
+        return bullet;
     }
 
     void update(double timeDelta, void*) override {
@@ -283,12 +287,12 @@ public:
     }
 
     ~Player() {
-
     }
 
     vec3 getControllerPosition() { return controllerPosition; }
     vec3 getLookDirection() { return lookDirection; }
     int getHealth() { return health; }
+    bool getIsShooting() { return isShooting; }
 
 private:
     const float CONTROLLER_RADIUS = 0.5f;
@@ -316,6 +320,7 @@ private:
     vec3 lookDirection;
     double lastMouseX, lastMouseY;
     bool isMoving, isOnGround, isMousePressed;
+    bool isShooting;
 
     vec3 tailPosition;
     vec3 bodyDirection;

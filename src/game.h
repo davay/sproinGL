@@ -1,6 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "bullet.h"
 #include "centipede.h"
 #include "emu.h"
 #include "game_camera.h"
@@ -72,17 +73,15 @@ public:
         // Update physics
         pm.update(timeDelta);
 
-        player->input(window, &pm);
+        Bullet *bullet = player->input(window, &pm);
+        if (bullet != nullptr) {
+            gameObjects.push_back(bullet);
+            pm.addParticle(bullet->getParticle());
+        }
 
         // Update entities
         for (int i = 0; i < gameObjects.size(); i++) {
             gameObjects[i]->update(timeDelta, player);
-        }
-
-        // Delete flagged entities
-        for (int i = gameObjects.size() - 1; i >= 0; i--) {
-            if (gameObjects[i]->getShouldBeDeleted()) {
-            }
         }
 
         gameCamera.update(timeDelta, player);

@@ -92,7 +92,6 @@ public:
             vec3 responseForce = (thisParticle->getPosition() - otherParticle->getPosition()) * 0.05f;
             thisParticle->applyForce(responseForce);
             health--;
-            isCoolingDown = true;
         }
 
         if (health < 0) {
