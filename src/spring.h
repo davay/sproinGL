@@ -102,6 +102,10 @@ public:
         return Translate(middle) * rotate * Scale(0.001, 0.125, length(positionDelta) * 0.5);
     }
 
+    bool isInArena() {
+        return p1->isInArena() && p2->isInArena();
+    }
+    
 private:
     Particle *p1, *p2;
     float stiffness, damping;

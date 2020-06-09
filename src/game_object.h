@@ -26,6 +26,8 @@ class GameObject {
 
         bool isCoolingDown;
         vec3 color;
+
+        // bizzare bug on Devin's Linux, without these 3 extra unused fields, screen will stay on background
         float a;
         float b;
         float c;

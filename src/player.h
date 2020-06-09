@@ -247,6 +247,12 @@ public:
         } else {
             color = vec3(0.3f, 0.7f, 0.0f);
         }
+
+        if (health <= 0 || controllerPosition.y <= -100)
+            resetPosition();
+        
+        if (health <= 0)
+            resetHealth();
     }
 
     void collideWith(void *thisCollider, void *otherCollider) override {
@@ -299,6 +305,24 @@ public:
         return Translate(torso->getPosition()) * t * Scale(0.8, 0.8, 0.8);
     }
 
+    void resetPosition() {
+        controllerPosition = vec3(0, RESET_HEIGHT, 0);
+        base->setPosition(controllerPosition);
+        torso->setPosition(controllerPosition + vec3(0, HEIGHT+RESET_HEIGHT, 0));
+        leftHand->setPosition(controllerPosition + vec3(ARM_LENGTH, HEIGHT+RESET_HEIGHT, 0));
+        rightHand->setPosition(controllerPosition + vec3(-ARM_LENGTH, HEIGHT+RESET_HEIGHT, 0));
+        leftFootTarget = controllerPosition + vec3(1,RESET_HEIGHT,0);
+        rightFootTarget = controllerPosition + vec3(-1,RESET_HEIGHT,0);
+        leftFoot->setPosition(leftFootTarget);
+        rightFoot->setPosition(rightFootTarget);
+        collisionCooldown = 3;
+        isCoolingDown = true;
+    }
+
+    void resetHealth() {
+        health = MAX_HEALTH;
+    }
+
     ~Player() {
     }
 
@@ -323,8 +347,10 @@ private:
     const float ARM_LENGTH = 1.2f;
     const float LEG_LENGTH = 2.1f;
 
-    const int MAX_HEALTH = 10;
+    const int MAX_HEALTH = 5;
     const float MAX_COLLISION_COOLDOWN = 1.5;
+
+    const int RESET_HEIGHT = 15;
 
     vec3 controllerPosition;
     vec3 controllerVelocity;

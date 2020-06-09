@@ -133,21 +133,34 @@ public:
             cylinderModel.setColor(vec3(1.0f, 1.0f, 1.0f));
             cylinderModel.draw(sceneShader);
 
-            mat4 xf = spring->getShadowXform();
-            cubeModel.setXform(xf);
-            cubeModel.setColor(vec3(0.3f, 0.0f, 0.0f));
-            cubeModel.draw(sceneShader);
+            if (spring->isInArena()) {
+                mat4 xf = spring->getShadowXform();
+                cubeModel.setXform(xf);
+                cubeModel.setColor(vec3(0.3f, 0.0f, 0.0f));
+                cubeModel.draw(sceneShader);
+            }
         }
+
+        // // check if player died first
+        // if (player->getHealth() <= 0 || player->getControllerPosition().y) {
+        //     player->reset();
+        // }
 
         monkeyModel.setXform(player->getXform());
         monkeyModel.setColor(player->getColor());
         monkeyModel.draw(sceneShader);
-
+    
         vec3 playerPosition = player->getControllerPosition();
-        mat4 xf = Translate(vec3(playerPosition.x, 0.001, playerPosition.z)) * Scale(vec3(3, 0.001, 3)) * RotateX(90);
-        cylinderModel.setXform(xf);
-        cylinderModel.setColor(vec3(0.3f, 0.0f, 0.0f));
-        cylinderModel.draw(sceneShader);
+
+        // Draw base cylinder shadow
+        if (playerPosition.x >= -25 && playerPosition.x <= 25) {
+            if (playerPosition.z >= -25 && playerPosition.z <= 25) {
+                mat4 xf = Translate(vec3(playerPosition.x, 0.001, playerPosition.z)) * Scale(vec3(3, 0.001, 3)) * RotateX(90);
+                cylinderModel.setXform(xf);
+                cylinderModel.setColor(vec3(0.3f, 0.0f, 0.0f));
+                cylinderModel.draw(sceneShader);
+            }
+        }
 
         // Draw healthbar
         glUseProgram(hudShader);

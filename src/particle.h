@@ -66,6 +66,11 @@ public:
         return Translate(position) * Scale(radius, radius, radius);
     }
 
+    bool isInArena() {
+        return position.x >= -25 && position.x <= 25 
+            && position.z >= -25 && position.z <= 25; 
+    }
+
     vec3 getPosition() { return position; }
     vec3 getVelocity() { return velocity; }
     float getRadius() { return radius; }
