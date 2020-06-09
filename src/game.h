@@ -94,7 +94,7 @@ public:
 
         // Draw arena
         cubeModel.setXform(Translate(0.0f, -1.0f, 0.0f) * Scale(25, 1, 25));
-        cubeModel.setColor(vec3(1.0f, 0.3f, 0.4f));
+        cubeModel.setColor(vec3(0.9f, 0.2f, 0.3f));
         cubeModel.draw(sceneShader);
 
         // Draw particles
@@ -128,7 +128,7 @@ public:
 
         // Draw healthbar
         glUseProgram(hudShader);
-        cubeModel.setXform(Translate(0.0f, 0.98f, 0.0f) * Scale(player->getHealth() * 0.01, 0.02, 0.2));
+        cubeModel.setXform(Translate(0.0f, 0.97f, 0.0f) * Scale(player->getHealth() * 0.05, 0.03, 0.2));
         cubeModel.setColor(vec3(0.3f, 0.7f, 0.0f));
         cubeModel.draw(hudShader);
     }

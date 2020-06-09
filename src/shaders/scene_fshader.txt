@@ -6,16 +6,31 @@ in vec3 vColor;
 
 out vec4 fragColor;
 
-void main() {
-    vec3 light = vec3(0.0f, 6.0f, 8.0f);
+float calcDirLightIntensity(vec3 dir) {
     vec3 N = normalize(vNormal);            // surface normal
-    vec3 L = normalize(light - vPoint);     // light vector
-    vec3 E = normalize(vPoint);             // eye vector
-    vec3 R = reflect(L, N);                 // highlight vector
-    float d = dot(N, L);                    //  diffuse
-    float s = dot(R, E);                    //  specular
-    //float intensity = clamp(d + pow(s, 50.0f), 0.0f, 1.0f);
-    float intensity = clamp(d, 0.1f, 1.0f);
+    vec3 L = normalize(dir);                // light direction
+    float d = dot(N, -L);                    // diffuse
+    float intensity = clamp(d, 0.0f, 0.3f);
+    return intensity;
+}
+
+float calcPointLightIntensity(vec3 lightPos) {
+    vec3 N = normalize(vNormal);            // surface normal
+    vec3 L = normalize(lightPos - vPoint);  // light vector
+    float d = dot(N, L);                    // diffuse
+    float intensity = clamp(d / length(lightPos - vPoint) * 10, 0.0f, 1.0f);
+    return intensity;
+}
+
+void main() {
+    vec3 light1 = vec3(0.0f, 20.0f, 0.0f);
+    vec3 light2 = vec3(20.0f, 20.0f, -20.0f);
+    vec3 light3 = vec3(0.0f, 50.0f, -0.0f);
+
+    float intensity = 0.1f;
+    intensity += calcDirLightIntensity(vec3(1, -1, 1));
+    intensity += calcPointLightIntensity(light1);
+
     vec3 rgb = vColor * intensity;
     fragColor = vec4(rgb, 1.0f);
 }

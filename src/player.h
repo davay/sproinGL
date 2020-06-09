@@ -323,7 +323,7 @@ private:
     const float LEG_LENGTH = 2.1f;
 
     const int MAX_HEALTH = 10;
-    const float MAX_COLLISION_COOLDOWN = 1;
+    const float MAX_COLLISION_COOLDOWN = 1.5;
 
     vec3 controllerPosition;
     vec3 controllerVelocity;

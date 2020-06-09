@@ -26,6 +26,9 @@ class GameObject {
 
         bool isCoolingDown;
         vec3 color;
+        float a;
+        float b;
+        float c;
 };
 
 #endif

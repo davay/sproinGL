@@ -41,7 +41,8 @@ public:
         }
 
         if (health <= 0) {
-            particle->setPosition(vec3(0, 0, -100));
+            particle->setPosition(vec3(0, 0, -1000));
+            particle->setVelocity(vec3(0, 0, 0));
         }
     }
 
