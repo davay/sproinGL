@@ -2,6 +2,8 @@ Makefile
 include/glm/doc
 .vscode/
 *.a
+build/
+nvcompatlog.txt
 sproinGL
 CMakeCache.txt
 *.cmake
