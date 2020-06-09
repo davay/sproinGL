@@ -111,6 +111,18 @@ public:
             }
 
             sphereModel.draw(sceneShader);
+
+            vec3 particlePosition = particle->getPosition();
+
+            if (particlePosition.x >= -25 && particlePosition.x <= 25) {
+                if (particlePosition.z >= -25 && particlePosition.z <= 25) {
+                    float radius = particle->getRadius() * 4;
+                    mat4 xf = Translate(vec3(particlePosition.x, 0.001, particlePosition.z)) * Scale(vec3(radius, 0.001, radius)) * RotateX(90);
+                    cylinderModel.setXform(xf);
+                    cylinderModel.setColor(vec3(0.3f, 0.0f, 0.0f));
+                    cylinderModel.draw(sceneShader);
+                }
+            }
         }
 
         // Draw springs
@@ -120,11 +132,22 @@ public:
             cylinderModel.setXform(spring->getXform());
             cylinderModel.setColor(vec3(1.0f, 1.0f, 1.0f));
             cylinderModel.draw(sceneShader);
+
+            mat4 xf = spring->getShadowXform();
+            cubeModel.setXform(xf);
+            cubeModel.setColor(vec3(0.3f, 0.0f, 0.0f));
+            cubeModel.draw(sceneShader);
         }
 
         monkeyModel.setXform(player->getXform());
         monkeyModel.setColor(player->getColor());
         monkeyModel.draw(sceneShader);
+
+        vec3 playerPosition = player->getControllerPosition();
+        mat4 xf = Translate(vec3(playerPosition.x, 0.001, playerPosition.z)) * Scale(vec3(3, 0.001, 3)) * RotateX(90);
+        cylinderModel.setXform(xf);
+        cylinderModel.setColor(vec3(0.3f, 0.0f, 0.0f));
+        cylinderModel.draw(sceneShader);
 
         // Draw healthbar
         glUseProgram(hudShader);

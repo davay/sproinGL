@@ -24,7 +24,7 @@ public:
                 vec3 delta = p2->getPosition() - p1->getPosition();
 
                 if (length(delta) > 0 && length(delta) < p1->getRadius() + p2->getRadius()) {
-                    float bounceStrength = 0.004f / sqrt(length(delta));
+                    float bounceStrength = 0.01f / sqrt(length(delta));
                     vec3 bounceForce = -delta * bounceStrength;
                     p1->applyForce(bounceForce);
                     p2->applyForce(-bounceForce);

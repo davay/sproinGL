@@ -78,6 +78,30 @@ public:
         return Translate(middle) * rotate * Scale(0.5, 0.5, length(positionDelta));
     }
 
+    mat4 getShadowXform() {
+        vec3 p1Position = vec3(p1->getPosition().x, 0.001, p1->getPosition().z);
+        vec3 p2Position = vec3(p2->getPosition().x, 0.001, p2->getPosition().z);
+        vec3 positionDelta = p2Position - p1Position;
+        vec3 middle = (p1Position + p2Position) / 2.0f;
+        middle.y = 0.001f;
+        vec3 up = (dot(positionDelta, up) > 0.00001f) ? vec3(0, 1, 0) : vec3(0, 0, 1);
+
+        vec3 z = normalize(positionDelta);
+        vec3 x = normalize(cross(up, z));
+        vec3 y = normalize(cross(z, x));
+
+        mat4 m = mat4(
+            vec4(x, 0),
+            vec4(y, 0),
+            vec4(z, 0),
+            vec4(0, 0, 0, 1)
+        );
+
+        mat4 rotate = Transpose(m);
+
+        return Translate(middle) * rotate * Scale(0.001, 0.125, length(positionDelta) * 0.5);
+    }
+
 private:
     Particle *p1, *p2;
     float stiffness, damping;

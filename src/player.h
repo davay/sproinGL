@@ -59,6 +59,7 @@ public:
         pm->addSpring(new Spring(torso, rightHand, ARM_LENGTH, 0.04, 0.05));
         pm->addSpring(new Spring(torso, leftFoot, LEG_LENGTH, 0.04, 0.1));
         pm->addSpring(new Spring(torso, rightFoot, LEG_LENGTH, 0.04, 0.1));
+        pm->addSpring(new Spring(leftHand, rightHand, 2, 0.01, 0.1), false);
     }
 
     Bullet* input(GLFWwindow *window, PhysicsManager *pm) {
